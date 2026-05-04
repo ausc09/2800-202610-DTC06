@@ -1,0 +1,29 @@
+{
+  "name": "2800-202610-dtc06",
+  "version": "1.0.0",
+  "description": "Team Name: DTC-06",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ausc09/2800-202610-DTC06.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ausc09/2800-202610-DTC06/issues"
+  },
+  "homepage": "https://github.com/ausc09/2800-202610-DTC06#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
