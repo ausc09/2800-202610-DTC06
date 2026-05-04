@@ -15,3 +15,8 @@ Team Members:
 ## More details to come
 
 TBA
+
+`models/` : MongoDB schemas for the app (e.g. Plant, User, Review)
+`public/`: Static files that the browser can access directly (CSS, JS)
+`views/`: EJS templates for rendering HTML pages
+`routes/`: Express route handlers for each URL endpoint
