@@ -16,6 +16,17 @@ app.get("/", (req, res) => {
   });
 });
 
+connectDB();
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+async function connectDB() {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('MongoDB connected');
+    } catch (error) {
+        console.log(error);
+    }
+}
