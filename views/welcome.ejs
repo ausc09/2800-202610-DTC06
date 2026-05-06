@@ -1,0 +1,85 @@
+<!-- views/welcome.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head") %>
+
+  <script>
+    if (localStorage.getItem("onboarding_done")) {
+      window.location.href = "/map";
+    }
+  </script>
+
+</head>
+<body class="bg-brand-bg font-body text-brand-text min-h-screen">
+
+  <!-- Onboarding slides (first launch only) -->
+  <%- include("partials/onboarding") %>
+
+  <!-- Splash content (shown after onboarding is dismissed) -->
+  <div class="min-h-screen flex flex-col items-center justify-between px-6 py-12">
+
+    <!-- Top: Logo + title -->
+    <div class="flex-1 flex flex-col items-center justify-center gap-4">
+
+      <!-- App icon -->
+      <div class="w-20 h-20 bg-white rounded-2xl shadow-card flex items-center justify-center mb-2">
+        <!-- Replace with your actual logo SVG -->
+        <svg class="w-10 h-10 text-brand-green" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+             viewBox="0 0 24 24">
+          <path d="M12 22V12"/>
+          <path d="M12 12C12 8 16 4 20 4c0 4-4 8-8 8z"/>
+          <path d="M12 16C12 13 8 9 4 9c0 4 4 7 8 7z"/>
+        </svg>
+      </div>
+
+      <!-- App name -->
+      <h1 class="text-3xl font-display font-semibold text-brand-text tracking-tight">
+        PlantSafe
+      </h1>
+
+      <!-- Subtitle with underline -->
+      <div class="flex flex-col items-center gap-1">
+        <p class="text-[11px] text-brand-muted tracking-[0.15em] uppercase">
+          Urban Foraging Guide
+        </p>
+        <div class="w-8 h-[2px] bg-brand-brown rounded-full"></div>
+      </div>
+
+      <!-- Description -->
+      <p class="text-sm text-brand-sub text-center leading-relaxed mt-2 max-w-[260px]">
+        Discover edible plants near you in Vancouver
+      </p>
+    </div>
+
+    <!-- Bottom: Buttons -->
+    <div class="w-full flex flex-col gap-3 max-w-sm">
+
+      <!-- Log In -->
+      <a href="/login"
+         class="w-full bg-brand-charcoal text-white text-sm font-medium
+                text-center py-4 rounded-full hover:opacity-90 transition-opacity">
+        Log In
+      </a>
+
+      <!-- Register -->
+      <a href="/signup"
+         class="w-full bg-white text-brand-text text-sm font-medium
+                text-center py-4 rounded-full border border-brand-border
+                hover:bg-brand-alt transition-colors">
+        Register
+      </a>
+
+      <!-- Continue as guest -->
+      <a href="/map"
+         class="w-full text-brand-muted text-sm text-center py-2
+                hover:text-brand-sub transition-colors">
+        Continue as guest
+      </a>
+    </div>
+
+  </div>
+
+</body>
+</html>

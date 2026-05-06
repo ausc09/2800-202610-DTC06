@@ -40,16 +40,31 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+function requireLogin(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login")
+}
+
 // Routes
 const plantRoutes = require("./routes/plantRoutes");
 app.use(plantRoutes);
 
 app.get("/", (req, res) => {
-  res.render("index.ejs", { userPlaceholder: "UserPlaceHolder" });
+  res.redirect("/welcome");
 });
 
+app.get("/map", (req, res) => {
+  res.render("map", { userPlaceholder: "UserPlaceHolder" });
+});
+
+app.get("/welcome", (req, res) => res.render("welcome"));
 app.get("/login", (req, res) => res.render("login"));
 app.get("/signup", (req, res) => res.render("signup"));
+
+app.get("/saved",   requireLogin, (req, res) => res.render("saved"));
+app.get("/profile", requireLogin, (req, res) => res.render("profile"));
 
 app.use("/auth", require("./routes/auth"));
 
