@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/plant", (req, res) => {
+router.get("/plants", (req, res) => {
   const plant = {
     name: "Apple Tree",
     scientificName: "Malus domestica",
