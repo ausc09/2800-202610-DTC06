@@ -1,0 +1,76 @@
+<button
+  id="save-button"
+  class="absolute top-3 right-3 bg-brand-alt rounded-xl p-2 hover:bg-brand-border"
+>
+  <i id="save-icon" class="fa-regular fa-bookmark w-5 h-5 text-brand-sub"></i>
+</button>
+
+<script>
+  const saveButton = document.getElementById("save-button");
+  const saveIcon = document.getElementById("save-icon");
+  const plantId = "<%= plant.id %>";
+
+  let isSaved = false;
+
+  async function checkFavorite() {
+    try {
+      const res = await fetch(`/favorites/isFavorite?plantId=${plantId}`);
+      if (!res.ok) {
+        console.error("Favorite check failed:", await res.text());
+
+        return;
+      }
+      const data = await res.json();
+      isSaved = data.isFavorite;
+      renderButton();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderButton() {
+    if (isSaved) {
+      saveIcon.className = "fa-solid fa-bookmark w-5 h-5 text-brand";
+    } else {
+      saveIcon.className = "fa-regular fa-bookmark w-5 h-5 text-brand-sub";
+    }
+  }
+
+  saveButton.addEventListener("click", async () => {
+    try {
+      if (!isSaved) {
+        console.log("Saving plant with ID:", plantId);
+        await fetch("/favorites", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plantId: plantId,
+          }),
+        });
+
+        isSaved = true;
+      } else {
+        console.log("Removing plant with ID:", plantId);
+        await fetch("/favorites", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plantId: plantId,
+          }),
+        });
+
+        isSaved = false;
+      }
+
+      renderButton();
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  checkFavorite();
+</script>
