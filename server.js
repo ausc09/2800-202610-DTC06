@@ -65,7 +65,7 @@ async function main() {
   });
 
   app.get("/map", (req, res) => {
-    res.render("map", { userPlaceholder: "UserPlaceHolder" });
+    res.render("map", { user: req.user || null });
   });
 
   app.get("/welcome", (req, res) => res.render("welcome"));

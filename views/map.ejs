@@ -1,11 +1,102 @@
+<!-- views/map.ejs -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-      <%- include("partials/head") %>
-  </head>
-  <body class="bg-brand-bg font-body text-brand-text">
-    <%- include("partials/onboarding") %>
+<head>
+  <%- include("partials/head") %>
+</head>
+<body class="bg-brand-bg font-body text-brand-text">
 
-    <%- include("partials/bottomnav") %>
-  </body>
+  <!-- Fixed top header -->
+  <div class="fixed top-0 left-0 right-0 z-40 bg-brand-alt px-4 pb-3" style="padding-top: calc(env(safe-area-inset-top) + 1rem)">
+
+    <!-- Greeting row -->
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <p id="greeting-sub" class="text-xs text-brand-muted"></p>
+        <p class="text-lg font-display font-semibold">
+          <% if (user) { %>
+            <%= user.firstName %> 👋
+          <% } else { %>
+            Explorer 🌿
+          <% } %>
+        </p>
+      </div>
+
+      <!-- User avatar (logged in only) -->
+      <% if (user) { %>
+        <a href="/profile"
+           class="w-9 h-9 rounded-full bg-brand-green text-white text-sm
+                  font-medium flex items-center justify-center">
+          <%= user.firstName.charAt(0).toUpperCase() %>
+        </a>
+      <% } %>
+    </div>
+
+    <!-- Search bar -->
+    <div class="flex items-center gap-2 bg-brand-surface rounded-full px-4 py-2.5 mb-3">
+      <svg class="w-4 h-4 text-brand-muted flex-shrink-0" fill="none"
+           stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search-input"
+             placeholder="Search plants or locations..."
+             class="bg-transparent text-sm text-brand-text placeholder-brand-muted
+                    outline-none w-full" />
+    </div>
+
+    <!-- Filter chips -->
+    <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <button onclick="filterMap('all')"
+              class="filter-chip active flex-shrink-0 px-4 py-1.5 rounded-full
+                     text-xs font-medium bg-brand-charcoal text-white"
+              data-filter="all">
+        All
+      </button>
+      <button onclick="filterMap('berries')"
+              class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full
+                     text-xs font-medium bg-brand-surface text-brand-sub
+                     border border-brand-border"
+              data-filter="berries">
+        Berries
+      </button>
+      <button onclick="filterMap('fruit trees')"
+              class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full
+                     text-xs font-medium bg-brand-surface text-brand-sub
+                     border border-brand-border"
+              data-filter="fruit trees">
+        Fruit Trees
+      </button>
+      <button onclick="filterMap('herbs')"
+              class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full
+                     text-xs font-medium bg-brand-surface text-brand-sub
+                     border border-brand-border"
+              data-filter="herbs">
+        Herbs
+      </button>
+    </div>
+  </div>
+
+  <!-- Spacer for fixed header -->
+  <div class="h-44"></div>
+
+  <!-- Map container -->
+  <div id="map" class="w-full" style="height: calc(100vh - 176px - 64px);"></div>
+
+  <!-- Data source label -->
+  <div class="fixed z-30 bottom-20 right-3
+              bg-white/90 backdrop-blur-sm rounded-full
+              px-3 py-1.5 flex items-center gap-1.5">
+    <div class="w-2 h-2 rounded-full bg-brand-green"></div>
+    <span class="text-[10px] text-brand-sub">Falling Fruit</span>
+  </div>
+
+  <%- include("partials/bottomnav") %>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/map.js"></script>
+
+</body>
 </html>
