@@ -4,7 +4,6 @@ const session = require("express-session");
 const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
-const favoritesRoutes = require("./routes/favoritesRoutes");
 const savedRoutes = require("./routes/saved");
 
 const app = express();
@@ -83,7 +82,6 @@ async function main() {
   app.get("/signup", (req, res) => res.render("signup"));
 
   app.get("/profile", requireLogin, (req, res) => res.render("profile"));
-  app.use("/favorites", favoritesRoutes);
   app.use("/saved", savedRoutes);
 
   app.use("/auth", authRoutes);

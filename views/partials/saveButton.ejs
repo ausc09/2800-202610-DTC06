@@ -14,7 +14,7 @@
 
   async function checkFavorite() {
     try {
-      const res = await fetch(`/favorites/isFavorite?plantId=${plantId}`);
+      const res = await fetch(`/saved/isFavorite?plantId=${plantId}`);
       if (!res.ok) {
         console.error("Favorite check failed:", await res.text());
 
@@ -40,7 +40,7 @@
     try {
       if (!isSaved) {
         console.log("Saving plant with ID:", plantId);
-        await fetch("/favorites", {
+        await fetch("/saved", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +53,7 @@
         isSaved = true;
       } else {
         console.log("Removing plant with ID:", plantId);
-        await fetch("/favorites", {
+        await fetch("/saved", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
