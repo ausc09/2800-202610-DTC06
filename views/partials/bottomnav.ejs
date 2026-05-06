@@ -7,7 +7,7 @@
   <div class="flex justify-around items-center h-16 max-w-screen-lg mx-auto">
 
     <!-- Map tab -->
-    <a href="/" class="nav-tab group flex flex-col items-center justify-center gap-1 flex-1 py-2"
+    <a href="/map" class="nav-tab group flex flex-col items-center justify-center gap-1 flex-1 py-2"
        data-page="map">
       <svg class="w-6 h-6 text-brand-muted group-[.active]:text-brand-green transition-colors"
            fill="none" stroke="currentColor" stroke-width="1.5"
@@ -78,10 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const path = window.location.pathname;
   document.querySelectorAll(".nav-tab").forEach(tab => {
     const page = tab.dataset.page;
-    if (
-      (page === "map" && path === "/") ||
-      (page !== "map" && path.startsWith("/" + page))
-    ) {
+    if (path.startsWith("/" + page)) {
       tab.classList.add("active");
     }
   });
