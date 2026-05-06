@@ -18,3 +18,14 @@ function filterMap(type) {
   // TODO: filter map markers by type
 }
 
+// Initialize map centered on Vancouver
+// Code adapted from: https://leafletjs.com/examples/quick-start/
+// Modified by: Austyn Chan
+const map = L.map("map").setView([49.2827, -123.1207], 13);
+
+// Add map tiles (the actual map images from OpenStreetMap - free)
+// Code adapted from: https://carto.com/basemaps/
+// Modified by: Austyn Chan
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  attribution: "© OpenStreetMap contributors"
+}).addTo(map);
