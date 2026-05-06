@@ -16,6 +16,14 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/plant", (req, res) => {
+  const plant = {
+    name: "PlantName",
+    scientificName: "scientificName",
+  };
+  res.render("plant.ejs", { plant });
+});
+
 connectDB();
 
 app.listen(PORT, () => {
@@ -23,10 +31,10 @@ app.listen(PORT, () => {
 });
 
 async function connectDB() {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('MongoDB connected');
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("MongoDB connected");
+  } catch (error) {
+    console.log(error);
+  }
 }
