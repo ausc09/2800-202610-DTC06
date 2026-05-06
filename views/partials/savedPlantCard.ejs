@@ -1,0 +1,111 @@
+<div
+  class="relative bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-4"
+>
+  <div
+    class="w-20 h-20 rounded-2xl bg-[#EEEAE4] flex items-center justify-center shrink-0 overflow-hidden"
+    id="plant-image-<%= plant.id %>"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="w-9 h-9"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#9D9587"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M12 21V9" />
+      <path d="M12 9C8 9 6 7 6 4c4 0 6 2 6 5z" />
+      <path d="M12 9c4 0 6-2 6-5-4 0-6 2-6 5z" />
+    </svg>
+  </div>
+
+  <div class="flex flex-col min-w-0 flex-1">
+    <h3 class="font-display font-bold text-lg text-brand-text truncate">
+      <%= plant.name %>
+    </h3>
+
+    <p class="font-body text-base italic text-brand-muted truncate">
+      <%= plant.scientificName %>
+    </p>
+
+    <div class="flex items-center gap-3 mt-1 flex-wrap">
+      <span
+        class="
+          text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1
+
+          <%= plant.safety.status === 'safe'
+            ? 'bg-brand-greenPale text-brand-green'
+
+            : plant.safety.status === 'caution'
+            ? 'bg-[#F5EEDF] text-[#9C7A4D]'
+
+            : plant.safety.status === 'unsafe'
+            ? 'bg-red-100 text-red-600'
+
+            : 'bg-brand-alt text-brand-sub'
+          %>
+        "
+      >
+        <% if (plant.safety.status === 'safe') { %>
+          ✓
+        <% } %>
+
+        <% if (plant.safety.status === 'caution') { %>
+          ⚠
+        <% } %>
+
+        <% if (plant.safety.status === 'unsafe') { %>
+          ✕
+        <% } %>
+
+        <%= plant.safety.label %>
+      </span>
+
+      <span
+        class="bg-brand-alt text-brand-sub text-xs font-medium px-2 py-1 rounded-full"
+      >
+        <%= plant.season %>
+      </span>
+    </div>
+  </div>
+
+  <%- include("./saveButton", {
+    plant,
+    buttonClass: "bg-transparent hover:bg-transparent",
+  }) %>
+</div>
+
+<script>
+  (() => {
+    const plant = <%- JSON.stringify(plant) %>;
+
+    const saveButton = document.getElementById(
+      "save-button-<%= plant.id %>"
+    );
+
+    const saveIcon = document.getElementById(
+      "save-icon-<%= plant.id %>"
+    );
+
+    const imageContainer = document.getElementById(
+      "plant-image-<%= plant.id %>"
+    );
+
+    let isSaved = false;
+
+    if (plant.imgUrl) {
+      const img = document.createElement("img");
+
+      img.src = plant.imgUrl;
+      img.alt = plant.name;
+      img.className = "w-full h-full object-cover";
+
+      imageContainer.innerHTML = "";
+      imageContainer.appendChild(img);
+    }
+
+   
+  })();
+</script>

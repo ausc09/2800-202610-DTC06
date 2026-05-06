@@ -5,6 +5,7 @@ const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
 const favoritesRoutes = require("./routes/favoritesRoutes");
+const savedRoutes = require("./routes/saved");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -81,9 +82,9 @@ async function main() {
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
 
-  app.get("/saved", requireLogin, (req, res) => res.render("saved"));
   app.get("/profile", requireLogin, (req, res) => res.render("profile"));
   app.use("/favorites", favoritesRoutes);
+  app.use("/saved", savedRoutes);
 
   app.use("/auth", authRoutes);
 
