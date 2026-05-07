@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include("partials/head") %>
+    <title>Edible Plants · PlantSafe</title>
+</head>
+
+<body class="bg-brand-bg font-body text-brand-text">
+
+  <div class="px-5 pt-6 pb-2 flex justify-between items-center">
+    <h1 class="font-display font-bold text-2xl text-brand-text">Edible Plants</h1>
+    <button class="bg-brand-alt rounded-xl p-2">
+      <i class="fa-solid fa-bars text-brand-sub"></i>
+    </button>
+  </div>
+
+  <%- include("partials/searchbar", { placeholder: "Search plants..." }) %>
+
+    <div class="flex gap-2 px-4 pb-3 overflow-x-auto">
+      <button class="bg-brand-charcoal text-white text-xs font-semibold px-4 py-2 rounded-full">All</button>
+      <button class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full">Nearby</button>
+      <button class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full">In Season</button>
+      <button class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full">Safe Only</button>
+    </div>
+
+    <p class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
+      <%= plants.length %> PLANTS NEAR YOU
+    </p>
+
+    <div class="px-4 flex flex-col gap-3 pb-24">
+      <% plants.forEach(plant=> { %>
+        <a href="/plant/<%= plant.id %>" class="block">
+          <%- include("partials/plantcard", { plant }) %>
+        </a>
+        <% }) %>
+    </div>
+
+    <%- include("partials/bottomnav") %>
+</body>
+
+</html>

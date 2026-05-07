@@ -1,0 +1,97 @@
+<div
+  class="bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-3"
+>
+  <div
+    class="w-14 h-14 rounded-xl bg-[#EEEAE4] flex items-center justify-center shrink-0"
+    id="plant-image"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="w-7 h-7 text-brand-brown"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#9D9587"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M12 21V9" />
+      <path d="M12 9C8 9 6 7 6 4c4 0 6 2 6 5z" />
+      <path d="M12 9c4 0 6-2 6-5-4 0-6 2-6 5z" />
+    </svg>
+  </div>
+
+  <div class="flex flex-col min-w-0 flex-1">
+    <div class="flex items-start justify-between gap-2">
+      <h3 class="font-display font-bold text-sm text-brand-text truncate">
+        <%= plant.name %>
+      </h3>
+
+      <span
+        class="
+        text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
+
+        <%= plant.safety.status === 'safe'
+        ? 'bg-brand-greenPale text-brand-green'
+
+        : plant.safety.status === 'caution'
+        ? 'bg-[#F5EEDF] text-[#9C7A4D]'
+
+        : plant.safety.status === 'unsafe'
+        ? 'bg-red-100 text-red-600'
+
+        : 'bg-brand-alt text-brand-sub'
+        %>
+        "
+        >
+        <% if (plant.safety.status === 'safe') { %>
+            ✓
+        <% } %>
+
+        <% if (plant.safety.status === 'caution') { %>
+            ⚠
+        <% } %>
+
+        <% if (plant.safety.status === 'unsafe') { %>
+            ✕
+        <% } %>
+
+        <%= plant.safety.label %>
+        </span>
+    </div>
+
+    <p class="font-body text-xs italic text-brand-muted mt-1 truncate">
+      <%= plant.scientificName %>
+    </p>
+
+    <div
+      class="font-body flex items-center gap-2 text-xs text-brand-muted mt-2 flex-wrap"
+    >
+      <span> <i class="fas fa-map-marker-alt"></i> <%= plant.location %></span>
+      <span>•</span>
+      <span><%= plant.distance %></span>
+      <span>•</span>
+      <span class="text-brand-greenMid font-medium"><%= plant.season %></span>
+    </div>
+  </div>
+
+  <div
+    class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
+  >
+    <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
+    <span><%= plant.source %></span>
+  </div>
+</div>
+
+<script>
+  const plant = <%- JSON.stringify(plant) %>;
+  if (plant.imgUrl) {
+    const imgContainer = document.getElementById("plant-image");
+    const img = document.createElement("img");
+    img.src = plant.imgUrl;
+    img.alt = plant.name;
+    img.className = "w-full h-full object-cover rounded-xl";
+    imgContainer.innerHTML = "";
+    imgContainer.appendChild(img);
+  }
+</script>
