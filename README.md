@@ -16,7 +16,12 @@ Team Members:
 
 TBA
 
-`models/` : MongoDB schemas for the app (e.g. Plant, User, Review)
-`public/`: Static files that the browser can access directly (CSS, JS)
-`views/`: EJS templates for rendering HTML pages
-`routes/`: Express route handlers for each URL endpoint
+- `models/` : MongoDB schemas for the app (e.g. Plant, User, Review)
+- `public/`: Static files that the browser can access directly (CSS, JS)
+- `views/`: EJS templates for rendering HTML pages
+- `routes/`: Express route handlers for each URL endpoint
+
+## Attributions
+
+- Leaflet.js map implementation adapted from: https://leafletjs.com/examples/quick-start/
+- CartoDB map tiles adapted from: https://carto.com/basemaps/
