@@ -73,6 +73,20 @@ router.get("/me", (req, res) => {
   res.json({ id: _id, firstName, lastName, email, role, twoFactorEnabled });
 });
 
+//update profile
+router.put('/update-profile', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+  try {
+    const { firstName, lastName } = req.body;
+    if (!firstName || !lastName) return res.status(400).json({ error: 'Name cannot be empty' });
+
+    await User.findByIdAndUpdate(req.user._id, { firstName, lastName });
+    res.json({ message: 'Profile updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Google OAuth
 router.get(
   "/google",

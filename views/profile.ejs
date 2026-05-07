@@ -10,6 +10,8 @@
       <div class="flex mb-6 items-center justify-between">
         <h1 class="font-display font-bold text-xl">Profile</h1>
         <button
+          id="edit-btn"
+          onclick="startEdit()"
           class="text-sm text-brand-sub hover:text-brand-green transition"
         >
           Edit
@@ -21,21 +23,73 @@
         <div
           class="flex w-20 h-20 mb-3 bg-brand-green rounded-2xl items-center justify-center"
         >
-          <span class="text-white font-display font-bold text-3xl">
+          <span
+            class="text-white font-display font-bold text-3xl"
+            id="avatar-letter"
+          >
             <%= user.firstName.charAt(0).toUpperCase() %>
           </span>
         </div>
-        <h2 class="font-display font-bold text-xl">
-          <%= user.firstName %> <%= user.lastName %>
-        </h2>
-        <p class="mt-1 text-sm text-brand-sub"><%= user.email %></p>
-        <div class="flex mt-2 items-center gap-1">
-          <span class="inline-block w-2 h-2 bg-brand-green rounded-full"></span>
-          <span class="text-xs text-brand-sub">
-            Member since <%= new
-            Date(user.createdAt).toLocaleDateString('en-US', { month: 'short',
-            year: 'numeric' }) %>
-          </span>
+
+        <!-- View mode -->
+        <div id="view-mode" class="flex flex-col items-center">
+          <h2 class="font-display font-bold text-xl" id="display-name">
+            <%= user.firstName %> <%= user.lastName %>
+          </h2>
+          <p class="mt-1 text-sm text-brand-sub"><%= user.email %></p>
+          <div class="flex mt-2 items-center gap-1">
+            <span
+              class="inline-block w-2 h-2 bg-brand-green rounded-full"
+            ></span>
+            <span class="text-xs text-brand-sub">
+              Member since <%= new
+              Date(user.createdAt).toLocaleDateString('en-US', { month: 'short',
+              year: 'numeric' }) %>
+            </span>
+          </div>
+        </div>
+
+        <!-- Edit mode -->
+        <div id="edit-mode" class="hidden w-full mt-2">
+          <div class="mb-3">
+            <label
+              class="block mb-1 text-xs font-semibold text-brand-text tracking-widest"
+              >FIRST NAME</label
+            >
+            <input
+              id="edit-firstName"
+              type="text"
+              value="<%= user.firstName %>"
+              class="w-full px-4 py-3 text-brand-text text-sm bg-brand-surface border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block mb-1 text-xs font-semibold text-brand-text tracking-widest"
+              >LAST NAME</label
+            >
+            <input
+              id="edit-lastName"
+              type="text"
+              value="<%= user.lastName %>"
+              class="w-full px-4 py-3 text-brand-text text-sm bg-brand-surface border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+            />
+          </div>
+          <div class="flex gap-3">
+            <button
+              onclick="cancelEdit()"
+              class="flex-1 py-3 text-brand-sub text-sm border border-brand-border rounded-xl hover:bg-brand-alt transition"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="saveEdit()"
+              class="flex-1 py-3 text-white text-sm bg-brand-charcoal rounded-xl hover:bg-brand-green transition"
+            >
+              Save
+            </button>
+          </div>
+          <p id="edit-err" class="hidden mt-2 text-red-500 text-sm"></p>
         </div>
       </div>
 
