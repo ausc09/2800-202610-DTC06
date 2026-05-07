@@ -74,15 +74,17 @@ async function main() {
   });
 
   app.get("/map", (req, res) => {
-    res.render("map", { userPlaceholder: "UserPlaceHolder" });
+    res.render("map", { user: req.user || null });
   });
 
   app.get("/welcome", (req, res) => res.render("welcome"));
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
 
-  app.get("/profile", requireLogin, (req, res) => res.render("profile"));
-  app.use("/saved", savedRoutes);
+  app.get("/saved", requireLogin, (req, res) => res.render("saved"));
+  app.get("/profile", requireLogin, (req, res) => {
+    res.render("profile", { user: req.user });
+  });
 
   app.use("/auth", authRoutes);
 

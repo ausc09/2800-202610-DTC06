@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("partials/head") %>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body class="min-h-screen font-body text-brand-text bg-brand-bg">
+    <div class="max-w-md mx-auto px-6 py-8">
+      <!-- Header -->
+      <div class="flex mb-6 items-center justify-between">
+        <h1 class="font-display font-bold text-xl">Profile</h1>
+        <button
+          id="edit-btn"
+          onclick="startEdit()"
+          class="text-sm text-brand-sub hover:text-brand-green transition"
+        >
+          Edit
+        </button>
+      </div>
+
+      <!-- Avatar + Info -->
+      <div class="flex flex-col mb-8 items-center">
+        <div
+          class="flex w-20 h-20 mb-3 bg-brand-green rounded-2xl items-center justify-center"
+        >
+          <span
+            class="text-white font-display font-bold text-3xl"
+            id="avatar-letter"
+          >
+            <%= user.firstName.charAt(0).toUpperCase() %>
+          </span>
+        </div>
+
+        <!-- View mode -->
+        <div id="view-mode" class="flex flex-col items-center">
+          <h2 class="font-display font-bold text-xl" id="display-name">
+            <%= user.firstName %> <%= user.lastName %>
+          </h2>
+          <p class="mt-1 text-sm text-brand-sub"><%= user.email %></p>
+          <div class="flex mt-2 items-center gap-1">
+            <span
+              class="inline-block w-2 h-2 bg-brand-green rounded-full"
+            ></span>
+            <span class="text-xs text-brand-sub">
+              Member since <%= new
+              Date(user.createdAt).toLocaleDateString('en-US', { month: 'short',
+              year: 'numeric' }) %>
+            </span>
+          </div>
+        </div>
+
+        <!-- Edit mode -->
+        <div id="edit-mode" class="hidden w-full mt-2">
+          <div class="mb-3">
+            <label
+              class="block mb-1 text-xs font-semibold text-brand-text tracking-widest"
+              >FIRST NAME</label
+            >
+            <input
+              id="edit-firstName"
+              type="text"
+              value="<%= user.firstName %>"
+              class="w-full px-4 py-3 text-brand-text text-sm bg-brand-surface border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block mb-1 text-xs font-semibold text-brand-text tracking-widest"
+              >LAST NAME</label
+            >
+            <input
+              id="edit-lastName"
+              type="text"
+              value="<%= user.lastName %>"
+              class="w-full px-4 py-3 text-brand-text text-sm bg-brand-surface border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+            />
+          </div>
+          <div class="flex gap-3">
+            <button
+              onclick="cancelEdit()"
+              class="flex-1 py-3 text-brand-sub text-sm border border-brand-border rounded-xl hover:bg-brand-alt transition"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="saveEdit()"
+              class="flex-1 py-3 text-white text-sm bg-brand-charcoal rounded-xl hover:bg-brand-green transition"
+            >
+              Save
+            </button>
+          </div>
+          <p id="edit-err" class="hidden mt-2 text-red-500 text-sm"></p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 mb-8 gap-3">
+        <div
+          class="p-4 text-center bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <p class="font-display font-bold text-2xl">0</p>
+          <p class="mt-1 text-xs text-brand-muted tracking-widest">
+            PLANTS SAVED
+          </p>
+        </div>
+        <div
+          class="p-4 text-center bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <p class="font-display font-bold text-2xl">0</p>
+          <p class="mt-1 text-xs text-brand-muted tracking-widest">REVIEWS</p>
+        </div>
+        <div
+          class="p-4 text-center bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <p class="font-display font-bold text-2xl">0</p>
+          <p class="mt-1 text-xs text-brand-muted tracking-widest">PHOTOS</p>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="mb-6">
+        <h3 class="mb-3 font-display font-semibold text-base">
+          Recent Activity
+        </h3>
+        <div
+          class="overflow-hidden bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <!-- Activity item 1 -->
+          <div
+            class="flex px-4 py-4 border-b border-brand-border items-center gap-3"
+          >
+            <div
+              class="flex flex-shrink-0 w-10 h-10 bg-brand-greenPale rounded-xl items-center justify-center"
+            >
+              <i data-lucide="star" class="w-5 h-5 text-brand-green"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm">
+                Reviewed
+                <span class="text-brand-green font-medium">XXX</span>
+              </p>
+              <p class="mt-0.5 text-xs text-brand-muted">X days ago</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-brand-muted"></i>
+          </div>
+
+          <!-- Activity item 2 -->
+          <div
+            class="flex px-4 py-4 border-b border-brand-border items-center gap-3"
+          >
+            <div
+              class="flex flex-shrink-0 w-10 h-10 bg-brand-greenPale rounded-xl items-center justify-center"
+            >
+              <i data-lucide="bookmark" class="w-5 h-5 text-brand-green"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm">
+                Saved
+                <span class="text-brand-green font-medium">XXX</span>
+              </p>
+              <p class="mt-0.5 text-xs text-brand-muted">X days ago</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-brand-muted"></i>
+          </div>
+
+          <!-- Activity item 3 -->
+          <div class="flex px-4 py-4 items-center gap-3">
+            <div
+              class="flex flex-shrink-0 w-10 h-10 bg-brand-greenPale rounded-xl items-center justify-center"
+            >
+              <i data-lucide="star" class="w-5 h-5 text-brand-green"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm">
+                Reviewed
+                <span class="text-brand-green font-medium">XXX</span>
+              </p>
+              <p class="mt-0.5 text-xs text-brand-muted">X week ago</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-brand-muted"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <button
+        onclick="logout()"
+        class="w-full py-4 mb-20 text-red-500 font-medium text-sm border border-red-200 rounded-xl hover:bg-red-50 transition"
+      >
+        Log out
+      </button>
+    </div>
+
+    <%- include("partials/bottomnav") %>
+
+    <script>
+      lucide.createIcons();
+    </script>
+    <script src="/js/profile.js"></script>
+  </body>
+</html>
