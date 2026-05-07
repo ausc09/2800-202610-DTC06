@@ -73,7 +73,9 @@ async function main() {
   app.get("/signup", (req, res) => res.render("signup"));
 
   app.get("/saved", requireLogin, (req, res) => res.render("saved"));
-  app.get("/profile", requireLogin, (req, res) => res.render("profile"));
+  app.get("/profile", requireLogin, (req, res) => {
+    res.render("profile", { user: req.user });
+  });
 
   app.use("/auth", authRoutes);
 
