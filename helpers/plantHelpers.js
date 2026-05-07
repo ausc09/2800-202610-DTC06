@@ -10,6 +10,8 @@ async function formatPlantItem(item) {
     name: category ? category.name : "Unknown",
     scientificName: category ? category.scientificName : "Unknown",
     location: plantDoc?.address || "Unknown",
+    lat: plantDoc?.lat || item.lat,
+    lng: plantDoc?.lng || item.lng,
     lastObserved: item.updated_at
       ? new Date(item.updated_at).toDateString()
       : "Unknown",

@@ -12,6 +12,8 @@ const plantSchema = new mongoose.Schema({
   address: String,
   season_start: Number,
   season_stop: Number,
+  lat: Number,
+  lng: Number,
   photos: [String],
   reviews: [reviewSchema],
 });

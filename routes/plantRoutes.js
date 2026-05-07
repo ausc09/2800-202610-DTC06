@@ -108,6 +108,8 @@ router.get("/api/seed-locations", async (req, res) => {
           address: data.address,
           season_start: data.season_start,
           season_stop: data.season_stop,
+          lat: loc.lat,
+          lng: loc.lng,
         },
         { upsert: true },
       );
