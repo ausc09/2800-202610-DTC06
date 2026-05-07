@@ -8,16 +8,10 @@ const reviewSchema = new mongoose.Schema({
 });
 
 const plantSchema = new mongoose.Schema({
-  name: String,
-  scientificName: String,
-  description: String,
-  location: {
-    lat: Number,
-    lng: Number,
-  },
-  season: String,
-  access: String,
-  fruitingStatus: String,
+  fallingFruitId: { type: Number, required: true, unique: true },
+  address: String,
+  season_start: Number,
+  season_stop: Number,
   photos: [String],
   reviews: [reviewSchema],
 });
