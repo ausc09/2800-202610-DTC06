@@ -43,7 +43,7 @@ async function loadPlants() {
       "api_key=AKDJGHSD&" +
       "bounds=49.198,-123.224%7C49.315,-123.023&" +
       "locale=en&" +
-      "limit=500"
+      "limit=20"
     );
     const data = await res.json();
 
