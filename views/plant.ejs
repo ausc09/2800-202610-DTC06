@@ -24,11 +24,8 @@
           <i class="fa-solid fa-angle-left w-5 h-5 text-brand-sub"></i>
         </button>
         <!-- Save button -->
-        <button
-          class="absolute top-3 right-3 bg-brand-alt rounded-xl p-2 hover:bg-brand-border"
-        >
-          <i class="fa-regular fa-bookmark w-5 h-5 text-brand-sub"></i>
-        </button>
+        <!-- Save button -->
+      <%- include("partials/saveButton", { plant, buttonClass: "absolute top-3 right-3" }) %>
       </div>
 
       <!-- Plant information -->
@@ -138,5 +135,7 @@
         </div>
       </div>
     </div>
+    <%- include("partials/bottomnav") %>
   </body>
+  
 </html>

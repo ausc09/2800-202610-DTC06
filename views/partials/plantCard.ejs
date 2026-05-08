@@ -3,7 +3,7 @@
 >
   <div
     class="w-14 h-14 rounded-xl bg-[#EEEAE4] flex items-center justify-center shrink-0"
-    id="plant-image"
+    id="plant-image-<%= plant.id %>"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +86,9 @@
 <script>
   const plant = <%- JSON.stringify(plant) %>;
   if (plant.imgUrl) {
-    const imgContainer = document.getElementById("plant-image");
+    const imgContainer = document.getElementById(
+  "plant-image-<%= plant.id %>",
+  );
     const img = document.createElement("img");
     img.src = plant.imgUrl;
     img.alt = plant.name;
