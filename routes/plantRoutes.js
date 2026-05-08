@@ -17,6 +17,21 @@ const { formatPlantItem } = require("../helpers/plantHelpers");
 //   res.render("plant.ejs", { plant });
 // });
 
+router.get("/plant/information/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const response = await fetch(
+      `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
+    );
+    const data = await response.json();
+    const plant = await formatPlantItem(data);
+    res.json(plant);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
 router.get("/plant/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -41,6 +56,7 @@ router.get("/plants", async (req, res) => {
     console.log(data[0]);
     const plants = await Promise.all(data.map(formatPlantItem));
     res.render("plantList", { plants });
+    console.log(plants);
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");

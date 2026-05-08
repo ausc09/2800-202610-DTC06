@@ -37,6 +37,7 @@
       </main>
     <% } else { %>
       <main class="flex flex-col gap-4 p-4">
+        <%- include("partials/searchBar", { placeholder: "Search saved plants..." }) %>
         <% savedPlants.forEach((plant) => { %>
           <%- include("partials/savedPlantCard", { plant: plant }) %>
         <% }) %>

@@ -11,14 +11,6 @@ const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
 
-async function connectDB() {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log("MongoDB connected");
-  } catch (error) {
-    console.log(error);
-  }
-}
 // connect database
 function connectDB() {
   return mongoose
@@ -68,6 +60,7 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
+  app.use("/saved", savedRoutes);
 
   app.get("/", (req, res) => {
     res.redirect("/welcome");
@@ -81,7 +74,6 @@ async function main() {
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
 
-  app.get("/saved", requireLogin, (req, res) => res.render("saved"));
   app.get("/profile", requireLogin, (req, res) => {
     res.render("profile", { user: req.user });
   });

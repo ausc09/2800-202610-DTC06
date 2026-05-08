@@ -1,5 +1,13 @@
+<%
+  const safety = plant.safety || {
+    status: "unknown",
+    label: "Unknown"
+  };
+%>
+
 <div
-  class="relative bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-4"
+  id="card-<%= plant.id %>"
+  class="relative bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-4 cursor-pointer"
 >
   <div
     class="w-20 h-20 rounded-2xl bg-[#EEEAE4] flex items-center justify-center shrink-0 overflow-hidden"
@@ -35,38 +43,38 @@
         class="
           text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1
 
-          <%= plant.safety.status === 'safe'
+          <%= safety.status === 'safe'
             ? 'bg-brand-greenPale text-brand-green'
 
-            : plant.safety.status === 'caution'
+            : safety.status === 'caution'
             ? 'bg-[#F5EEDF] text-[#9C7A4D]'
 
-            : plant.safety.status === 'unsafe'
+            : safety.status === 'unsafe'
             ? 'bg-red-100 text-red-600'
 
             : 'bg-brand-alt text-brand-sub'
           %>
         "
       >
-        <% if (plant.safety.status === 'safe') { %>
+        <% if (safety.status === 'safe') { %>
           ✓
         <% } %>
 
-        <% if (plant.safety.status === 'caution') { %>
+        <% if (safety.status === 'caution') { %>
           ⚠
         <% } %>
 
-        <% if (plant.safety.status === 'unsafe') { %>
+        <% if (safety.status === 'unsafe') { %>
           ✕
         <% } %>
 
-        <%= plant.safety.label %>
+        <%= safety.label %>
       </span>
 
       <span
         class="bg-brand-alt text-brand-sub text-xs font-medium px-2 py-1 rounded-full"
       >
-        <%= plant.season %>
+        <%= plant.seasonStart && plant.seasonStop ? `${plant.seasonStart} – ${plant.seasonStop}` : "Unknown season" %>
       </span>
     </div>
   </div>
@@ -93,7 +101,17 @@
       "plant-image-<%= plant.id %>"
     );
 
-    let isSaved = false;
+    const card = document.getElementById(
+      "card-<%= plant.id %>"
+    );
+
+    card.addEventListener("click", async (e) => {
+      if (e.target === saveButton || saveButton.contains(e.target)) {
+        return;
+      }
+
+      window.location.href = `/plant/${plant.id}`;
+    });
 
     if (plant.imgUrl) {
       const img = document.createElement("img");
@@ -105,7 +123,5 @@
       imageContainer.innerHTML = "";
       imageContainer.appendChild(img);
     }
-
-   
   })();
 </script>

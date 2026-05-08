@@ -2,73 +2,73 @@ const express = require("express");
 const router = express.Router();
 require("../models/Plant");
 const UserSchema = require("../models/User");
+const {
+  getOrCreatePlant,
+  formatPlantItem,
+} = require("../helpers/plantHelpers");
 
-router.get("/", async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect("/login");
+function requireLogin(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
   }
+  res.redirect("/login");
+}
 
+router.get("/", requireLogin, async (req, res) => {
   try {
     const user = await UserSchema.findById(req.user._id).populate(
       "favoritePlants",
     );
-    const dummyPlants = [
-      {
-        id: 2,
 
-        name: "Elderberry",
-        scientificName: "Sambucus canadensis",
+    console.log("User's favorite plants:", user.favoritePlants);
 
-        location: "Queen Elizabeth Park",
-        distance: "2.4 km",
-        season: "Aug–Sep",
+    if (!user.favoritePlants || user.favoritePlants.length === 0) {
+      return res.render("saved", { savedPlants: [] });
+    }
 
-        source: "Falling Fruit",
+    const savedPlants = await Promise.all(
+      user.favoritePlants.map(async (plant) => {
+        const response = await fetch(
+          `http://localhost:3000/plant/information/${plant.fallingFruitId}`,
+        );
 
-        safety: {
-          status: "caution",
-          label: "Caution",
-        },
-      },
-    ];
-    res.render("saved", { savedPlants: user.favoritePlants });
+        if (!response.ok) {
+          throw new Error("Could not fetch plant information");
+        }
+
+        return await response.json();
+      }),
+    );
+
+    res.render("saved", { savedPlants });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving saved plants");
   }
 });
 
-function requireLogin(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-
-  return res.status(401).json({ message: "You must be logged in" });
-}
-
 router.post("/", requireLogin, async (req, res) => {
   const userId = req.user._id;
   const { plantId } = req.body;
 
-  console.log("Received plantId:", plantId);
-  console.log("User ID:", userId);
   try {
     const user = await UserSchema.findById(userId);
-    console.log("User found:", user);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const plant = await getOrCreatePlant(plantId);
+
     const alreadySaved = user.favoritePlants.some(
-      (id) => id.toString() === plantId,
+      (id) => id.toString() === plant._id.toString(),
     );
 
     if (alreadySaved) {
       return res.status(400).json({ message: "Plant already in favorites" });
     }
 
-    user.favoritePlants.push(plantId);
+    user.favoritePlants.push(plant._id);
     await user.save();
 
     res.status(201).json({ message: "Plant added to favorites" });
@@ -88,8 +88,10 @@ router.delete("/", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const plant = await getOrCreatePlant(plantId);
+
     user.favoritePlants = user.favoritePlants.filter(
-      (id) => id.toString() !== plantId,
+      (id) => id.toString() !== plant._id.toString(),
     );
 
     await user.save();
@@ -111,8 +113,10 @@ router.get("/isFavorite", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const plant = await getOrCreatePlant(plantId);
+
     const isFavorite = user.favoritePlants.some(
-      (id) => id.toString() === plantId,
+      (id) => id.toString() === plant._id.toString(),
     );
 
     res.status(200).json({ isFavorite });
