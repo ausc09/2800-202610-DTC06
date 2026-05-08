@@ -1,0 +1,74 @@
+<button
+  id="save-button-<%= plant.id %>"
+  class="rounded-xl p-2 <%= buttonClass || 'bg-brand-alt hover:bg-brand-border' %>"
+>
+  <i
+    id="save-icon-<%= plant.id %>"
+    class="fa-regular fa-bookmark w-5 h-5 text-brand-sub"
+  ></i>
+</button>
+
+<script>
+  (() => {
+    const plantId = "<%= plant.id %>";
+    const saveButton = document.getElementById(`save-button-${plantId}`);
+    const saveIcon = document.getElementById(`save-icon-${plantId}`);
+
+    let isSaved = false;
+
+    async function checkFavorite() {
+      try {
+        const res = await fetch(`/saved/isFavorite?plantId=${plantId}`);
+
+        if (!res.ok) {
+          console.error("Favorite check failed:", await res.text());
+          return;
+        }
+
+        const data = await res.json();
+        isSaved = data.isFavorite;
+        renderButton();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderButton() {
+      if (isSaved) {
+        saveIcon.className = "fa-solid fa-bookmark w-5 h-5 text-brand";
+      } else {
+        saveIcon.className = "fa-regular fa-bookmark w-5 h-5 text-brand-sub";
+      }
+    }
+
+    saveButton.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/saved", {
+          method: isSaved ? "DELETE" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ plantId }),
+        });
+
+        if (res.status === 401) {
+          alert("Please log in to save plants.");
+          window.location.href = "/login";
+          return;
+        }
+
+        if (!res.ok) {
+          console.error("Save request failed:", await res.text());
+          return;
+        }
+
+        isSaved = !isSaved;
+        renderButton();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    checkFavorite();
+  })();
+</script>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("partials/head") %>
+  </head>
+  <body class="bg-brand-bg min-h-screen font-body text-brand-text">
+    <div class="w-full min-h-screen bg-brand-bg">
+      <!-- Plant Photo -->
+      <div
+        class="w-full h-52 bg-brand-alt flex items-center justify-center relative"
+      >
+        <p class="text-brand-muted text-sm text-center">
+          plant photo<br />upload or community photo
+        </p>
+        <span
+          span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold"
+          >● API Source Here</span
+        >
+        <!-- Back button -->
+        <button
+          onclick="history.back()"
+          class="absolute top-3 left-3 bg-brand-alt rounded-xl p-2 hover:bg-brand-border"
+        >
+          <i class="fa-solid fa-angle-left w-5 h-5 text-brand-sub"></i>
+        </button>
+        <!-- Save button -->
+        <!-- Save button -->
+      <%- include("partials/saveButton", { plant, buttonClass: "absolute top-3 right-3" }) %>
+      </div>
+
+      <!-- Plant information -->
+      <div class="px-5 pt-4 pb-24">
+        <div class="flex justify-between items-start mb-1">
+          <div>
+            <h1 class="font-bold text-xl text-brand-text"><%= plant.name %></h1>
+            <p class="text-brand-sub text-sm italic">
+              <%= plant.scientificName %>
+            </p>
+            <p class="text-brand-muted text-xs mt-1">
+              <i class="fa-solid fa-location-dot"></i> <%= plant.location %>
+            </p>
+          </div>
+          <span
+            class="bg-brand-greenPale text-brand-green text-xs font-semibold px-2 py-1 rounded-full"
+          >
+            ✓ Safe
+          </span>
+        </div>
+
+        <!-- Details Card -->
+        <div
+          id="details-card" class="bg-brand-surface border border-brand-border rounded-2xl shadow-md p-4 mt-4"
+        >
+          <p
+            class="text-xs text-brand-muted font-semibold mb-3 tracking-widest"
+          >
+            DETAILS
+          </p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest">
+                SCIENTIFIC NAME
+              </p>
+              <p class="text-sm italic font-semibold mt-1">
+                <%= plant.scientificName %>
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest">
+                LAST OBSERVED
+              </p>
+              <p class="text-sm font-semibold mt-1">
+                <%= plant.lastObserved %>
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest">SEASON</p>
+              <p class="text-sm font-semibold mt-1"><%= plant.season %></p>
+            </div>
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest">ACCESS</p>
+              <p class="text-sm font-semibold mt-1"><%= plant.access %></p>
+            </div>
+          </div>
+          <hr class="border-brand-border my-3" />
+          <div class="flex justify-between items-end">
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest">
+                FRUITING STATUS
+              </p>
+              <p class="text-sm font-semibold mt-1">
+                <%= plant.fruitingStatus %>
+              </p>
+            </div>
+            <span
+              class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full"
+            >
+              ● In season
+            </span>
+          </div>
+        </div>
+
+        <!-- Verified Badge -->
+        <div
+          class="bg-brand-surface border border-brand-border rounded-2xl shadow-md p-4 mt-4 flex items-center gap-3"
+        >
+          <div
+            class="bg-brand-greenPale rounded-full p-3 flex items-center justify-center w-10 h-10"
+          >
+            <i class="fa-solid fa-shield-halved text-brand-green text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-brand-text">
+              Verified by Community
+            </p>
+            <p class="text-xs text-brand-muted">
+              Based on user reviews and ratings
+            </p>
+          </div>
+        </div>
+
+        <!-- Community Reviews -->
+        <div class="mt-6">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="font-semibold text-base">Community Reviews</h2>
+            <div class="relative">
+              <sspan id="add-yours-btn" class="text-brand-green text-sm font-semibold cursor-pointer">
+                Add yours
+              </span>
+            </div>
+          </div>
+          <div class="bg-brand-surface border border-brand-border rounded-2xl shadow-md p-4">
+            <p class="text-brand-muted text-sm">No reviews yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="wt-overlay" class="fixed inset-0 z-[998] hidden"
+     style="background:rgba(0,0,0,0.4)"></div>
+
+    <!-- Walkthrough tooltip -->
+    <div id="wt-tooltip"
+        class="fixed z-[999] bg-white rounded-2xl p-4 border border-brand-border
+                transition-all duration-500 ease-in-out opacity-0 pointer-events-none"
+        style="left:16px;right:16px;">
+      <div id="wt-arrow" style="position:absolute;width:12px;height:12px;
+                                  background:white;transform:rotate(45deg);
+                                  box-shadow:-2px -2px 4px rgba(0,0,0,0.06)"></div>
+      <p id="wt-text" class="text-sm text-brand-text leading-relaxed mb-3"></p>
+      <div class="flex justify-between items-center">
+        <button onclick="skipWalkthrough()"
+                class="text-xs text-brand-muted">Skip</button>
+        <button id="wt-next-btn" onclick="nextStep()"
+                class="text-sm font-medium text-brand-green">Next</button>
+      </div>
+    </div>
+
+    <script src="/js/plant.js"></script>
+    <%- include("partials/bottomnav") %>
+  </body>
+  
+</html>

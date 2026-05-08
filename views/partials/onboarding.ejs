@@ -1,0 +1,153 @@
+<!-- views/partials/onboarding.ejs -->
+<!-- Full-screen modal overlay, only shows on first visit -->
+<div
+  id="onboarding-overlay"
+  class="fixed inset-0 z-[100] bg-brand-bg flex items-center justify-center hidden"
+>
+  <!-- Slide container -->
+  <div
+    class="w-full max-w-sm mx-auto px-6 flex flex-col items-center justify-center min-h-screen"
+  >
+    <!-- Icon area -->
+    <div
+      id="slide-icon"
+      class="w-16 h-16 rounded-full bg-brand-greenPale flex items-center justify-center mb-8"
+    >
+      <!-- Icon changes per slide via JS -->
+    </div>
+
+    <!-- Title -->
+    <h2
+      id="slide-title"
+      class="text-2xl font-display font-medium text-brand-text text-center mb-3"
+    ></h2>
+
+    <!-- Description -->
+    <p
+      id="slide-desc"
+      class="text-sm text-brand-sub text-center leading-relaxed mb-10 max-w-[260px]"
+    ></p>
+
+    <!-- Button -->
+    <button
+      id="slide-btn"
+      onclick="nextSlide()"
+      class="bg-brand-charcoal text-white text-sm font-medium px-10 py-3 rounded-2xl hover:opacity-90 transition-opacity mb-4"
+    >
+      Next
+    </button>
+
+    <!-- Dots -->
+    <div id="slide-dots" class="flex gap-2 mb-4">
+      <div class="w-6 h-2 rounded-full bg-brand-charcoal"></div>
+      <div class="w-2 h-2 rounded-full bg-brand-border"></div>
+      <div class="w-2 h-2 rounded-full bg-brand-border"></div>
+    </div>
+
+    <!-- Skip -->
+    <button
+      id="skip-btn"
+      onclick="dismissOnboarding()"
+      class="text-sm text-brand-muted hover:text-brand-sub transition-colors"
+    >
+      Skip
+    </button>
+  </div>
+</div>
+
+<script>
+  // Slide content data
+  const slides = [
+    {
+      icon: `<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="90" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="3"/>
+                <g transform="translate(100,100)">
+                    <path d="M0,-38 C24,-24 34,0 26,24 C18,40 0,44 0,44 C0,44 -18,40 -26,24 C-34,0 -24,-24 0,-38 Z" fill="#2e7d32"/>
+                    <line x1="0" y1="-32" x2="0" y2="38" stroke="#e8f5e9" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="0" y1="-10" x2="-18" y2="4" stroke="#e8f5e9" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="0" y1="8" x2="-20" y2="20" stroke="#e8f5e9" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="0" y1="-10" x2="18" y2="4" stroke="#e8f5e9" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="0" y1="8" x2="20" y2="20" stroke="#e8f5e9" stroke-width="1.5" stroke-linecap="round"/>
+                </g>
+            </svg>`,
+      title: "Discover edible plants",
+      desc: "Find free, forageable plants across Vancouver on an interactive map.",
+      btn: "Next",
+    },
+    {
+      icon: `<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="90" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="3"/>
+                <g transform="translate(100,105)">
+                    <path d="M0,-46 C-26,-46 -36,-24 -36,-8 C-36,18 0,52 0,52 C0,52 36,18 36,-8 C36,-24 26,-46 0,-46 Z" fill="#2e7d32"/>
+                    <circle cx="0" cy="-8" r="18" fill="#e8f5e9"/>
+                    <path d="M0,-20 L0,-4" stroke="#2e7d32" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M-9,-10 L0,-4 L9,-10" fill="none" stroke="#2e7d32" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+            </svg>`,
+      title: "Tap a marker",
+      desc: "Each pin is a plant. Tap it to see what it is and if it's safe to eat.",
+      btn: "Next",
+    },
+    {
+      icon: `<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="90" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="3"/>
+                <g transform="translate(100,100)">
+                    <path d="M0,-44 L36,-28 L36,4 C36,28 18,44 0,52 C-18,44 -36,28 -36,4 L-36,-28 Z" fill="#2e7d32"/>
+                    <path d="M-16,4 L-4,16 L18,-14" fill="none" stroke="#e8f5e9" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+            </svg>`,
+      title: "Check before you forage",
+      desc: "See data sources and read community reviews to make sure it's safe.",
+      btn: "Get started",
+    },
+  ];
+
+  let currentSlide = 0;
+
+  // Show a specific slide
+  function showSlide(index) {
+    const slide = slides[index];
+    document.getElementById("slide-icon").innerHTML = slide.icon;
+    document.getElementById("slide-title").textContent = slide.title;
+    document.getElementById("slide-desc").textContent = slide.desc;
+    document.getElementById("slide-btn").textContent = slide.btn;
+
+    // Update dots
+    const dots = document.getElementById("slide-dots");
+    dots.innerHTML = slides
+      .map(
+        (_, i) =>
+          `<div class="h-2 rounded-full transition-all ${
+            i === index ? "w-6 bg-brand-charcoal" : "w-2 bg-brand-border"
+          }"></div>`,
+      )
+      .join("");
+
+    // Hide skip on last slide
+    document.getElementById("skip-btn").classList.toggle("hidden", index === 2);
+  }
+
+  // Go to next slide or dismiss
+  function nextSlide() {
+    if (currentSlide < slides.length - 1) {
+      currentSlide++;
+      showSlide(currentSlide);
+    } else {
+      dismissOnboarding();
+    }
+  }
+
+  // Close onboarding and save to localStorage
+  function dismissOnboarding() {
+    localStorage.setItem("onboarding_done", "true");
+    document.getElementById("onboarding-overlay").classList.add("hidden");
+  }
+
+  // On page load, check if user has seen onboarding
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!localStorage.getItem("onboarding_done")) {
+      document.getElementById("onboarding-overlay").classList.remove("hidden");
+      showSlide(0);
+    }
+  });
+</script>
