@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const PlantCategory = require("../models/PlantCategory");
+const PlantCategory = require("../models/plantCategory");
 const { formatPlantItem } = require("../helpers/plantHelpers");
 
 // router.get("/plant", (req, res) => {
@@ -103,7 +103,7 @@ router.get("/api/seed-categories", async (req, res) => {
   }
 });
 
-const Plant = require("../models/Plant");
+const Plant = require("../models/plant");
 
 router.get("/api/seed-locations", async (req, res) => {
   try {

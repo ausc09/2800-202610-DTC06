@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-require("../models/Plant");
+require("../models/plant");
 const UserSchema = require("../models/User");
 const {
   getOrCreatePlant,
@@ -33,7 +33,7 @@ router.get("/", requireLogin, async (req, res) => {
     const savedPlants = await Promise.all(
       user.favoritePlants.map(async (plant) => {
         const response = await fetch(
-          `http://localhost:3000/plant/information/${plant.fallingFruitId}`,
+          `https://fallingfruit.org/api/0.3/locations/${plant.fallingFruitId}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
         );
 
         if (!response.ok) {

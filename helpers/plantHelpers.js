@@ -1,5 +1,5 @@
-const PlantCategory = require("../models/PlantCategory");
-const PlantSchema = require("../models/Plant");
+const PlantCategory = require("../models/plantCategory");
+const PlantSchema = require("../models/plant");
 
 async function formatPlantItem(item) {
   const typeId = item.type_ids[0];
@@ -32,16 +32,20 @@ async function getOrCreatePlant(plantId) {
   let plant = await PlantSchema.findOne({ fallingFruitId: plantId });
   if (!plant) {
     const response = await fetch(
-      `http://localhost:3000/plant/information/${plantId}`,
+      `https://fallingfruit.org/api/0.3/locations/${plantId}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
     );
     if (!response.ok) {
       throw new Error("Could not fetch plant information");
     }
 
-    const plantInfo = await response.json();
+    const data = await response.json();
     plant = new PlantSchema({
-      ...plantInfo,
       fallingFruitId: plantId,
+      address: data.address || "Vancouver",
+      season_start: data.season_start,
+      season_stop: data.season_stop,
+      lat: data.lat,
+      lng: data.lng,
     });
     await plant.save();
   }
