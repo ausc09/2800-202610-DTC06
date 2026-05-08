@@ -60,7 +60,7 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
-  app.use("/saved", savedRoutes);
+  app.use("/saved", requireLogin, savedRoutes);
 
   app.get("/", (req, res) => {
     res.redirect("/welcome");

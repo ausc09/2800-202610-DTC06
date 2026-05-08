@@ -29,6 +29,39 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
   attribution: "© OpenStreetMap contributors © CARTO"
 }).addTo(map);
 
+// Show map tooltip on first visit
+document.addEventListener("DOMContentLoaded", () => {
+  if (!localStorage.getItem("hint_map_marker")) {
+    const tooltip = document.getElementById("map-tooltip");
+    const overlay = document.getElementById("map-tooltip-overlay");
+    overlay.classList.remove("hidden");
+
+    // Slight delay then fade in + slide up
+    setTimeout(() => {
+      tooltip.classList.remove("pointer-events-none");
+      tooltip.classList.remove("opacity-0", "translate-y-4");
+      tooltip.classList.add("opacity-100", "translate-y-0");
+    }, 300);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => dismissMapTooltip(), 5000);
+  }
+});
+
+function dismissMapTooltip() {
+  localStorage.setItem("hint_map_marker", "true");
+  const tooltip = document.getElementById("map-tooltip");
+  const overlay = document.getElementById("map-tooltip-overlay");
+
+  tooltip.classList.remove("opacity-100", "translate-y-0");
+  tooltip.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+  overlay.style.opacity = "0";
+
+  setTimeout(() => {
+    tooltip.classList.add("hidden");
+    overlay.classList.add("hidden");
+  }, 500);
+}
 
 const months = ["Jan","Feb","Mar","Apr","May","Jun",
                 "Jul","Aug","Sep","Oct","Nov","Dec"];
