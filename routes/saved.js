@@ -11,7 +11,11 @@ function requireLogin(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/login");
+
+  return res.status(401).json({
+    message: "You must be logged in",
+    redirectTo: "/login",
+  });
 }
 
 router.get("/", requireLogin, async (req, res) => {

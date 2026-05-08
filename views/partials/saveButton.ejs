@@ -51,6 +51,12 @@
           body: JSON.stringify({ plantId }),
         });
 
+        if (res.status === 401) {
+          alert("Please log in to save plants.");
+          window.location.href = "/login";
+          return;
+        }
+
         if (!res.ok) {
           console.error("Save request failed:", await res.text());
           return;
