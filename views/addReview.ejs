@@ -65,24 +65,63 @@
 
     <form action="/reviews/<%= plant._id %>" method="POST" enctype="multipart/form-data">
 
-      <!-- Star rating (required) -->
-      <div class="mb-5">
-        <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 block">
-          Your rating <span class="text-red-400">*</span>
-        </label>
-        <div class="flex gap-2">
-          <% for(let i = 1; i <= 5; i++) { %>
-            <button type="button"
-                    class="star-btn w-10 h-10 rounded-xl border border-brand-border
-                           flex items-center justify-center text-brand-muted
-                           hover:border-brand-star hover:text-brand-star transition-colors"
-                    data-value="<%= i %>">
-              <i class="fa-solid fa-star"></i>
-            </button>
-          <% } %>
+
+
+    <!-- Star rating (required) -->
+    <div class="mb-5">
+    <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 flex items-center gap-1">
+        Rate your foraging experience <span class="text-red-400">*</span>
+
+        <!-- Question mark icon -->
+        <div class="relative inline-block">
+        <button type="button" id="rating-help-btn"
+                class="text-brand-muted hover:text-brand-green transition-colors ml-1">
+        <i class="fa-solid fa-circle-info text-sm"></i>
+        </button>
+
+        <!-- Rating guide tooltip -->
+        <div id="rating-tooltip"
+            class="hidden absolute right-0 top-6 z-50 w-56 bg-white border
+                    border-brand-border rounded-xl shadow-modal p-3">
+            <p class="text-[10px] font-semibold text-brand-muted tracking-widest mb-2">
+            RATING GUIDE
+            </p>
+            <div class="flex flex-col gap-2">
+            <% [
+                { stars: "⭐", label: "Poor", desc: "Plant not found or unsafe" },
+                { stars: "⭐⭐", label: "Fair", desc: "Limited or hard to access" },
+                { stars: "⭐⭐⭐", label: "Good", desc: "Decent, plant as expected" },
+                { stars: "⭐⭐⭐⭐", label: "Great", desc: "Easy access, safe to eat" },
+                { stars: "⭐⭐⭐⭐⭐", label: "Excellent", desc: "Abundant and safe" }
+            ].forEach(row => { %>
+                <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs leading-none"><%= row.stars %></span>
+                    <span class="text-xs font-medium text-brand-text"><%= row.label %></span>
+                </div>
+                <p class="text-[10px] text-brand-muted pl-0.5"><%= row.desc %></p>
+                </div>
+            <% }) %>
+            </div>
         </div>
-        <input type="hidden" name="rating" id="rating-input" value="0">
-      </div>
+        </div>
+    </label>
+
+    <!-- Star buttons -->
+    <div class="flex gap-2">
+        <% for(let i = 1; i <= 5; i++) { %>
+        <button type="button"
+                class="star-btn w-10 h-10 rounded-xl border border-brand-border
+                        flex items-center justify-center text-brand-muted
+                        hover:border-brand-star hover:text-brand-star transition-colors"
+                data-value="<%= i %>">
+            <i class="fa-solid fa-star"></i>
+        </button>
+        <% } %>
+    </div>
+
+    <input type="hidden" name="rating" id="rating-input" value="0">
+    </div>
 
       <!-- Photo upload (optional) with AI moderation -->
       <div class="mb-5">
@@ -187,5 +226,6 @@
 
     </form>
   </div>
+<script src="/js/addReview.js"></script>
 </body>
 </html>
