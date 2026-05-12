@@ -4,6 +4,11 @@ const plantCategorySchema = new mongoose.Schema({
     fallingFruitTypeId: { type: Number, required: true, unique: true },
     name: String,
     scientificName: String,
+    categories: [String],
+    urls: {
+        wikipedia: String,
+        usda: String,
+    },
 });
 
 const PlantCategory = mongoose.model('PlantCategory', plantCategorySchema);

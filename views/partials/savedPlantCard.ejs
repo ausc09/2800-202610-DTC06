@@ -40,34 +40,11 @@
 
     <div class="flex items-center gap-3 mt-1 flex-wrap">
       <span
-        class="
-          text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1
-
-          <%= safety.status === 'safe'
-            ? 'bg-brand-greenPale text-brand-green'
-
-            : safety.status === 'caution'
-            ? 'bg-[#F5EEDF] text-[#9C7A4D]'
-
-            : safety.status === 'unsafe'
-            ? 'bg-red-100 text-red-600'
-
-            : 'bg-brand-alt text-brand-sub'
-          %>
-        "
+        class="text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1
+          <%= safety.status === 'verified' ? 'bg-brand-greenPale text-brand-green' : 'bg-brand-alt text-brand-sub' %>"
       >
-        <% if (safety.status === 'safe') { %>
-          ✓
-        <% } %>
-
-        <% if (safety.status === 'caution') { %>
-          ⚠
-        <% } %>
-
-        <% if (safety.status === 'unsafe') { %>
-          ✕
-        <% } %>
-
+        <% if (safety.status === 'verified') { %>✓<% } %>
+        <% if (safety.status === 'unverified') { %>⚠<% } %>
         <%= safety.label %>
       </span>
 
