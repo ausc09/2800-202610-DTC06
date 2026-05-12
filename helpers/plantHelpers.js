@@ -36,7 +36,7 @@ function getSeasonStatus(start, stop) {
 }
 
 async function formatPlantItem(item) {
-  const typeId = item.type_ids[0];
+  const typeId = item.type_ids?.[0];
   const category = await PlantCategory.findOne({ fallingFruitTypeId: typeId });
   const plantDoc = await PlantSchema.findOne({ fallingFruitId: item.id });
   const start = plantDoc?.season_start;
@@ -52,7 +52,12 @@ async function formatPlantItem(item) {
     id: item.id,
     name: category ? category.name : "Not Available",
     scientificName: category ? category.scientificName : "Not Available",
-    location: plantDoc?.address || "Not Available",
+    categories: category?.categories || [],
+    urls: category?.urls || {},
+    location: plantDoc?.address || item.address || "Not Available",
+    author: item.author || "Not Available",
+    description: item.description || "No description available.",
+    unverified: plantDoc?.unverified ?? item.unverified ?? false,
     lat: plantDoc?.lat || item.lat,
     lng: plantDoc?.lng || item.lng,
     lastObserved: item.updated_at

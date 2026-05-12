@@ -92,6 +92,11 @@ router.get("/api/seed-categories", async (req, res) => {
             type.scientific_names?.[0] ||
             "Unknown",
           scientificName: type.scientific_names?.[0] || "",
+          categories: type.categories || [],
+          urls: {
+            wikipedia: type.urls?.wikipedia || null,
+            usda: type.urls?.usda || null,
+          },
         },
         { upsert: true },
       );
@@ -122,6 +127,7 @@ router.get("/api/seed-locations", async (req, res) => {
         { fallingFruitId: loc.id },
         {
           address: data.address,
+          unverified: data.unverified,
           season_start: data.season_start,
           season_stop: data.season_stop,
           lat: loc.lat,
