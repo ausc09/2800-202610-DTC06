@@ -10,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
+const reviewRoutes = require("./routes/review")
 
 // connect database
 function connectDB() {
@@ -61,6 +62,7 @@ async function main() {
   // Routes
   app.use(plantRoutes);
   app.use("/saved", requireLogin, savedRoutes);
+  app.use("/review", reviewRoutes)
 
   app.get("/", (req, res) => {
     res.redirect("/welcome");
@@ -77,6 +79,10 @@ async function main() {
   app.get("/profile", requireLogin, (req, res) => {
     res.render("profile", { user: req.user });
   });
+
+  app.get("review", requireLogin, (req, res) => {
+    res.render("addReview")
+  })
 
   app.use("/auth", authRoutes);
 
