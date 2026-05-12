@@ -12,10 +12,9 @@
         <p class="text-brand-muted text-sm text-center">
           plant photo<br />upload or community photo
         </p>
-        <span
-          span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold"
-          >● API Source Here</span
-        >
+        <span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold">
+          ● <%= plant.source %>
+        </span>
         <!-- Back button -->
         <button
           onclick="history.back()"
@@ -23,7 +22,6 @@
         >
           <i class="fa-solid fa-angle-left w-5 h-5 text-brand-sub"></i>
         </button>
-        <!-- Save button -->
         <!-- Save button -->
       <%- include("partials/saveButton", { plant, buttonClass: "absolute top-3 right-3" }) %>
       </div>
@@ -40,11 +38,6 @@
               <i class="fa-solid fa-location-dot"></i> <%= plant.location %>
             </p>
           </div>
-          <span
-            class="bg-brand-greenPale text-brand-green text-xs font-semibold px-2 py-1 rounded-full"
-          >
-            ✓ Safe
-          </span>
         </div>
 
         <!-- Details Card -->
@@ -78,10 +71,59 @@
               <p class="text-sm font-semibold mt-1"><%= plant.season %></p>
             </div>
             <div>
-              <p class="text-xs text-brand-muted tracking-widest">ACCESS</p>
-              <p class="text-sm font-semibold mt-1"><%= plant.access %></p>
+              <p class="text-xs text-brand-muted tracking-widest">AUTHOR</p>
+              <p class="text-sm font-semibold mt-1"><%= plant.author %></p>
             </div>
           </div>
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest mb-2">
+                CATEGORIES
+              </p>
+              <% if (plant.categories && plant.categories.length > 0) { %>
+              <div class="flex flex-wrap gap-2">
+                <% plant.categories.forEach((category) => { %>
+                <span class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full">
+                  <%= category %>
+                </span>
+                <% }) %>
+              </div>
+              <% } else { %>
+              <p class="text-sm font-semibold mt-1">Not Available</p>
+              <% } %>
+            </div>
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest mb-2">
+                LEARNING SOURCES
+              </p>
+              <% if (plant.urls && (plant.urls.wikipedia || plant.urls.usda)) { %>
+              <div class="flex flex-wrap gap-3 text-sm font-semibold">
+                <% if (plant.urls.wikipedia) { %>
+                <a href="<%= plant.urls.wikipedia %>" target="_blank" rel="noopener noreferrer" class="text-brand-green hover:text-brand-greenMid">
+                  Wikipedia
+                </a>
+                <% } %>
+                <% if (plant.urls.usda) { %>
+                <a href="<%= plant.urls.usda %>" target="_blank" rel="noopener noreferrer" class="text-brand-green hover:text-brand-greenMid">
+                  USDA Plant Profile
+                </a>
+                <% } %>
+              </div>
+              <% } else { %>
+              <p class="text-sm font-semibold mt-1">Not Available</p>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <p class="text-xs text-brand-muted tracking-widest">
+              DESCRIPTION
+            </p>
+            <p class="text-sm font-semibold leading-relaxed mt-1">
+              <%= plant.description %>
+            </p>
+          </div>
+
           <hr class="border-brand-border my-3" />
           <div class="flex justify-between items-end">
             <div>
@@ -92,11 +134,15 @@
                 <%= plant.fruitingStatus %>
               </p>
             </div>
-            <span
-              class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full"
-            >
+            <% if (plant.seasonStatus === 'in') { %>
+            <span class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full">
               ● In season
             </span>
+            <% } else if (plant.seasonStatus === 'out') { %>
+            <span class="bg-brand-alt text-brand-sub text-xs font-semibold px-3 py-1 rounded-full">
+              ● Out of season
+            </span>
+            <% } %>
           </div>
         </div>
 
