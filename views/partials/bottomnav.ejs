@@ -78,7 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const path = window.location.pathname;
   document.querySelectorAll(".nav-tab").forEach(tab => {
     const page = tab.dataset.page;
-    if (path.startsWith("/" + page)) {
+    if (
+      path.startsWith("/" + page) ||
+      (page === "plants" && path.startsWith("/plant"))  // ← 加呢行
+    ) {
       tab.classList.add("active");
     }
   });
