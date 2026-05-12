@@ -53,7 +53,6 @@ router.get("/plants", async (req, res) => {
       `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023&limit=50`,
     );
     const data = await response.json();
-    console.log(data[0]);
     const plants = await Promise.all(data.map(formatPlantItem));
     res.render("plantList", { plants });
     console.log(plants);
@@ -66,7 +65,7 @@ router.get("/plants", async (req, res) => {
 router.get("/api/plants", async (req, res) => {
   try {
     const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023&limit=200`,
+      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023`,
     );
     const data = await response.json();
     const result = await Promise.all(data.map(formatPlantItem));
@@ -113,7 +112,7 @@ const Plant = require("../models/Plant");
 router.get("/api/seed-locations", async (req, res) => {
   try {
     const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023&limit=200`,
+      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023`,
     );
     const locations = await response.json();
 
