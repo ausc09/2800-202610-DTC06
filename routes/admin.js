@@ -42,4 +42,26 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
   }
 });
 
+const Review = require('../models/Review');
+
+// get all reviews
+router.get('/reviews', requireAdmin, async (req, res) => {
+  try {
+    const reviews = await Review.find().populate('userId', 'firstName lastName email').populate('plantId', 'name');
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// delete review
+router.delete('/reviews/:id', requireAdmin, async (req, res) => {
+  try {
+    await Review.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Review deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
