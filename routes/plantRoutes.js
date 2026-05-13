@@ -40,7 +40,7 @@ router.get("/plant/:id", async (req, res) => {
     );
     const data = await response.json();
     const plant = await formatPlantItem(data);
-    res.render("plant", { plant });
+    res.render("plant", { plant, user: req.user || null });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
