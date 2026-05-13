@@ -61,7 +61,7 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
-  app.use(requireLogin, aiTipRoutes);
+  app.use("/api", requireLogin, aiTipRoutes);
   app.use("/saved", requireLogin, savedRoutes);
 
   app.get("/", (req, res) => {

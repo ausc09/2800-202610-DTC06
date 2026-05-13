@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-router.post("/api/ai-foraging-tip", async (req, res) => {
+router.post("/ai-foraging-tip", async (req, res) => {
   try {
     const { imageBase64, plantName,
             scientificName, season,
