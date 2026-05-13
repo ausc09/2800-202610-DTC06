@@ -1,8 +1,13 @@
 let allUsers = [];
 let editingUserId = null;
 let allReviews = [];
+let currentUserId = null;
 
 async function loadUsers() {
+  const meRes = await fetch('/auth/me');
+  const me = await meRes.json();
+  currentUserId = me.id;
+
   const res = await fetch('/admin/users');
   if (!res.ok) {
     window.location.href = '/';
@@ -87,6 +92,10 @@ async function saveRole() {
 }
 
 async function deleteUser(id, name) {
+  if (id === currentUserId) {
+    alert('You cannot delete your own account.');
+    return;
+  }
   if (!confirm(`Are you sure you want to delete ${name}?`)) return;
   const res = await fetch(`/admin/users/${id}`, { method: 'DELETE' });
   if (res.ok) loadUsers();
