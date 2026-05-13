@@ -106,6 +106,7 @@ async function loadReviews() {
   if (!res.ok) return;
   allReviews = await res.json();
   renderReviews(allReviews);
+  document.getElementById('total-reviews').textContent = allReviews.length;
 }
 
 function renderReviews(reviews) {
