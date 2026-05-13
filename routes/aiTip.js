@@ -7,15 +7,20 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 router.post("/ai-foraging-tip", async (req, res) => {
   try {
-    const { imageBase64, plantName,
-            scientificName, season,
-            location } = req.body;
+    const { imageBase64, plantName, scientificName, season, location } =
+      req.body;
 
     // VALIDATION: check image exists
     if (!imageBase64) {
       return res.status(400).json({
-        error: "No image provided"
+        error: "No image provided",
       });
+
+      if (imageBase64.length > 7 * 1024 * 1024) {
+        return res.status(400).json({
+          error: "Image too large",
+        });
+      }
     }
 
     // GUARDRAIL: rate limit (DB-based)
@@ -25,26 +30,38 @@ router.post("/ai-foraging-tip", async (req, res) => {
       const lastUsed = new Date(user.aiTipLastUsed);
       const now = new Date();
       const isSameDay =
-        lastUsed.getFullYear() === now.getFullYear()
-        && lastUsed.getMonth() === now.getMonth()
-        && lastUsed.getDate() === now.getDate();
+        lastUsed.getFullYear() === now.getFullYear() &&
+        lastUsed.getMonth() === now.getMonth() &&
+        lastUsed.getDate() === now.getDate();
 
       if (isSameDay) {
         return res.status(429).json({
           error: "RATE_LIMITED",
-          message: "You've reached today's limit (1 per day). Try again tomorrow!"
+          message:
+            "You've reached today's limit (1 per day). Try again tomorrow!",
         });
       }
     }
 
+    function sanitize(str) {
+      return String(str)
+        .slice(0, 200)
+        .replace(/[`${}]/g, "");
+    }
+
+    const safeName = sanitize(plantName);
+    const safeSci = sanitize(scientificName);
+    const safeSeason = sanitize(season);
+    const safeLocation = sanitize(location);
+
     // PERSONALIZATION: plant context in prompt
     const prompt = `You are a foraging safety expert.
-                    The user is viewing: "${plantName}"
-                    (${scientificName}).
-                    Season: ${season}. Location: ${location}.
+                    The user is viewing: "${safeName}"
+                    (${safeSci}).
+                    Season: ${safeSeason}. Location: ${safeLocation}.
 
                     Analyze this photo and provide:
-                    1. Whether this matches ${plantName}
+                    1. Whether this matches ${safeName}
                     2. Foraging tips specific to this plant
                     3. Best time to harvest
                     4. How to prepare/eat safely
@@ -76,18 +93,16 @@ router.post("/ai-foraging-tip", async (req, res) => {
     const reply = response.text;
 
     // VALIDATION: check if not a plant
-    if (reply.includes('"error"')
-        && reply.includes("NOT_A_PLANT")) {
+    if (reply.includes('"error"') && reply.includes("NOT_A_PLANT")) {
       return res.json({
         success: false,
         error: "NOT_A_PLANT",
-        message: "No plant detected in photo."
+        message: "No plant detected in photo.",
       });
     }
 
     // GUARDRAIL: confidence check
-    const lowConfidence =
-      reply.startsWith("⚠️ Low confidence");
+    const lowConfidence = reply.startsWith("⚠️ Low confidence");
 
     // Record usage in DB
     await User.findByIdAndUpdate(req.user._id, {
@@ -99,11 +114,10 @@ router.post("/ai-foraging-tip", async (req, res) => {
       tip: reply,
       lowConfidence,
     });
-
   } catch (err) {
     console.error("AI Tip error:", err);
     res.status(500).json({
-      error: "AI analysis failed"
+      error: "AI analysis failed",
     });
   }
 });

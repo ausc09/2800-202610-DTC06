@@ -209,21 +209,18 @@ async function analyzePhoto(dataUrl) {
     aiLoading.classList.remove("flex");
 
     if (!data.success) {
-      // VALIDATION: not a plant photo
-      aiResultText.innerHTML =
-        '<span class="text-red-500 font-semibold">' +
-        '<i class="fa-solid fa-triangle-exclamation">' +
-        "</i> No plant detected.</span><br>" +
-        "Please upload a clear photo.";
+      aiResultText.textContent =
+        "⚠ No plant detected. Please upload a clear photo.";
+      aiResultText.className =
+        "text-sm leading-relaxed bg-red-50 text-red-600 rounded-xl p-3";
     } else if (data.lowConfidence) {
-      // GUARDRAIL: low confidence warning
-      aiResultText.innerHTML =
-        '<span class="text-amber-600 font-semibold">' +
-        "⚠️ Low confidence</span><br>" +
-        data.tip;
+      aiResultText.textContent = "⚠️ Low confidence: " + data.tip;
+      aiResultText.className =
+        "text-sm leading-relaxed bg-amber-50 text-amber-700 rounded-xl p-3";
     } else {
-      // Success: show the tip
       aiResultText.textContent = data.tip;
+      aiResultText.className =
+        "text-sm text-brand-sub leading-relaxed bg-brand-alt rounded-xl p-3";
     }
 
     aiResult.classList.remove("hidden");
