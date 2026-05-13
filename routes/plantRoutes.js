@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const PlantCategory = require("../models/PlantCategory");
+const Plant = require("../models/Plant");
+const Review = require("../models/review");
 const { formatPlantItem } = require("../helpers/plantHelpers");
 
 // router.get("/plant", (req, res) => {
@@ -40,7 +42,13 @@ router.get("/plant/:id", async (req, res) => {
     );
     const data = await response.json();
     const plant = await formatPlantItem(data);
-    res.render("plant", { plant });
+
+    const plantDoc = await Plant.findOne({ fallingFruitId: id });
+    let reviews = [];
+    if (plantDoc) {
+      reviews = await Review.find({ plantId: plantDoc._id }).sort({ date: -1 });
+    }
+    res.render("plant", { plant, reviews });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -106,8 +114,6 @@ router.get("/api/seed-categories", async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 });
-
-const Plant = require("../models/Plant");
 
 router.get("/api/seed-locations", async (req, res) => {
   try {
