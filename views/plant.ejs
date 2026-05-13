@@ -171,7 +171,7 @@
             <h2 class="font-semibold text-base">AI Foraging Tip</h2>
             <span class="text-[10px] px-2 py-1 bg-[#E6F1FB] text-[#0C447C] rounded-full flex items-center gap-1">
               <i class="fa-solid fa-sparkles text-[10px]"></i>
-              Claude AI
+              Gemini AI
             </span>
           </div>
 
@@ -267,6 +267,14 @@
                 class="text-sm font-medium text-brand-green">Next</button>
       </div>
     </div>
+
+    <script> 
+      window.PLANT_DATA = {
+      name: "<%= plant.name %>",
+      scientificName: "<%= plant.scientificName %>",
+      season: "<%= plant.season %>",
+      location: "<%= plant.location %>", };
+    </script>
 
     <script src="/js/plant.js"></script>
     <%- include("partials/bottomnav") %>
