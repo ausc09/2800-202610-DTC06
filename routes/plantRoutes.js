@@ -3,6 +3,7 @@ const router = express.Router();
 
 const PlantCategory = require("../models/PlantCategory");
 const { formatPlantItem } = require("../helpers/plantHelpers");
+const viewHistory = require('../models/viewHistory');
 
 // router.get("/plant", (req, res) => {
 //   const plant = {
@@ -40,6 +41,15 @@ router.get("/plant/:id", async (req, res) => {
     );
     const data = await response.json();
     const plant = await formatPlantItem(data);
+
+    if (req.user) {
+      await viewHistory.create({
+        userId: req.user._id,
+        fallingFruitId: Number(id),
+        plantName: plant.name || 'Unknown plant',
+      });
+    }
+
     res.render("plant", { plant });
   } catch (error) {
     console.log(error);
@@ -147,5 +157,6 @@ router.get("/api/seed-locations", async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 });
+
 
 module.exports = router;
