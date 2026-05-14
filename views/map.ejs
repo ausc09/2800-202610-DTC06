@@ -47,32 +47,35 @@
 
     <!-- Filter chips -->
     <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-      <button onclick="filterMap('all')"
-              class="filter-chip active flex-shrink-0 px-4 py-1.5 rounded-full
-                     text-xs font-medium bg-brand-charcoal text-white"
-              data-filter="all">
+      <button
+        type="button"
+        class="filter-chip active flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium bg-brand-charcoal text-white"
+        data-filter="all"
+      >
         All
       </button>
-      <button onclick="filterMap('berries')"
-              class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full
-                     text-xs font-medium bg-brand-surface text-brand-sub
-                     border border-brand-border"
-              data-filter="berries">
+
+      <button
+        type="button"
+        class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium bg-brand-surface text-brand-sub border border-brand-border"
+        data-filter="berry"
+      >
         Berries
       </button>
-      <button onclick="filterMap('fruit trees')"
-              class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full
-                     text-xs font-medium bg-brand-surface text-brand-sub
-                     border border-brand-border"
-              data-filter="fruit trees">
-        Fruit Trees
+
+      <button
+        type="button"
+        class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium bg-brand-surface text-brand-sub border border-brand-border"
+        data-filter="Apple"
+      >
+        Apples
       </button>
-      <button onclick="filterMap('herbs')"
-              class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full
-                     text-xs font-medium bg-brand-surface text-brand-sub
-                     border border-brand-border"
-              data-filter="herbs">
-        Herbs
+      <button
+        type="button"
+        class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium bg-brand-surface text-brand-sub border border-brand-border"
+        data-filter="Cherry"
+      >
+        Cherries
       </button>
     </div>
   </div>
@@ -117,6 +120,11 @@
     Got it
   </button>
 </div>
+
+  <%- include("partials/loader", {
+  id: "mapLoader",
+  message: "Loading plants..."
+}) %>
 
   <%- include("partials/bottomnav") %>
 

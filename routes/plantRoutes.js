@@ -85,13 +85,42 @@ router.get("/plants/:page", async (req, res) => {
 
 router.get("/api/plants", async (req, res) => {
   try {
-    const plants = await Plant.find({
+    const search = req.query.search?.trim() || "";
+    const type = req.query.type || "all";
+
+    const north = Number(req.query.north);
+    const south = Number(req.query.south);
+    const east = Number(req.query.east);
+    const west = Number(req.query.west);
+
+    const query = {
       lat: { $exists: true },
       lng: { $exists: true },
       name: { $exists: true, $ne: null },
-    }).select(
-      "fallingFruitId name scientificName lat lng season address safety reviews",
-    );
+    };
+
+    if (!isNaN(north) && !isNaN(south) && !isNaN(east) && !isNaN(west)) {
+      query.lat = { $gte: south, $lte: north };
+      query.lng = { $gte: west, $lte: east };
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { scientificName: { $regex: search, $options: "i" } },
+        { address: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (type !== "all") {
+      query.name = { $regex: type, $options: "i" };
+    }
+
+    const plants = await Plant.find(query)
+      .limit(300)
+      .select(
+        "fallingFruitId name scientificName lat lng season address location safety reviews unverified source distance",
+      );
 
     const result = plants.map((p) => ({
       ...p.toObject(),
@@ -100,6 +129,7 @@ router.get("/api/plants", async (req, res) => {
 
     res.json(result);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
