@@ -7,13 +7,22 @@ const viewHistory = require("../models/viewHistory");
 const Plant = require("../models/Plant");
 
 function getUserLocation(req) {
-  if (req.query.lat === undefined || req.query.lng === undefined) {
-    return null;
-  }
-  const lat = Number(req.query.lat);
-  const lng = Number(req.query.lng);
+  const source =
+    req.query.lat !== undefined && req.query.lng !== undefined
+      ? req.query
+      : req.session.userLocation;
+
+  const lat = Number(source.lat);
+  const lng = Number(source.lng);
   return { lat, lng };
 }
+
+router.post("/api/user-location", (req, res) => {
+  const lat = Number(req.body.lat);
+  const lng = Number(req.body.lng);
+  req.session.userLocation = { lat, lng };
+  res.status(200).json({ message: "Location saved" });
+});
 
 // router.get("/plant", (req, res) => {
 //   const plant = {
