@@ -40,7 +40,7 @@ router.get("/plant/:id", async (req, res) => {
     );
     const data = await response.json();
     const plant = await formatPlantItem(data);
-    res.render("plant", { plant, user: req.user || null });
+    res.render("plant", { plant });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -64,13 +64,8 @@ router.get("/plants", async (req, res) => {
 
 router.get("/api/plants", async (req, res) => {
   try {
-    const { swLat, swLng, neLat, neLng } = req.query;
-    if (!swLat || !swLng || !neLat || !neLng) {
-      return res.status(400).json({ error: "Missing bounds" });
-    }
-
     const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=${swLat},${swLng}|${neLat},${neLng}&limit=50`,
+      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023`,
     );
     const data = await response.json();
     const result = await Promise.all(data.map(formatPlantItem));
