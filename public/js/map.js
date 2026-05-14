@@ -133,10 +133,10 @@ async function loadPlants() {
             </div>
             <div style="display:flex;gap:6px;margin-bottom:10px">
               <span style="font-size:11px;padding:3px 8px;
-                          background:${plant.verified ? "#e8f5ee" : "#f5f5f5"};
-                          color:${plant.verified ? "#2d6a4f" : "#888"};
+                          background:${plant.safety?.status === 'verified' ? "#e8f5ee" : "#f5f5f5"};
+                          color:${plant.safety?.status === 'verified' ? "#2d6a4f" : "#888"};
                           border-radius:20px">
-                ${plant.verified ? "✓ Verified" : "○ Unverified"}
+                ${plant.safety?.label || "Unverified"}
               </span>
               ${season ? `
                 <span style="font-size:11px;padding:3px 8px;background:#f5f0e8;

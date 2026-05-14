@@ -75,12 +75,17 @@ async function main() {
   app.get("/welcome", (req, res) => res.render("welcome"));
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
+  app.get("/admin", requireLogin, (req, res) => {
+  if (req.user.role !== 'admin') return res.redirect('/');
+  res.render("admin");
+});
 
   app.get("/profile", requireLogin, (req, res) => {
     res.render("profile", { user: req.user });
   });
 
   app.use("/auth", authRoutes);
+  app.use("/admin", require("./routes/admin"));
 
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
