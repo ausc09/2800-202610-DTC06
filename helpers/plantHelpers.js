@@ -1,6 +1,7 @@
 const { getDistance } = require("geolib");
 const PlantCategory = require("../models/PlantCategory");
 const PlantSchema = require("../models/Plant");
+const Review = require("../models/review");
 
 const MONTHS = [
   "Jan",
@@ -16,6 +17,9 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
+
+const MIN_VERIFIED_REVIEWS = 3;
+const VERIFIED_AVERAGE_RATING = 4;
 
 function toMonthName(val) {
   const n = parseInt(val, 10);
@@ -54,6 +58,41 @@ function formatDistance(userLocation, plantLocation) {
   return (distanceMeters / 1000).toFixed(1);
 }
 
+async function getReviewStats(plantId) {
+  if (!plantId) {
+    return { reviewCount: 0, averageRating: 0 };
+  }
+
+  const [stats] = await Review.aggregate([
+    { $match: { plantId } },
+    {
+      $group: {
+        _id: "$plantId",
+        reviewCount: { $sum: 1 },
+        averageRating: { $avg: "$rating" },
+      },
+    },
+  ]);
+
+  return stats || { reviewCount: 0, averageRating: 0 };
+}
+
+function getSafetyFromReviewStats(reviewStats) {
+  if (
+    reviewStats.reviewCount >= MIN_VERIFIED_REVIEWS &&
+    reviewStats.averageRating >= VERIFIED_AVERAGE_RATING
+  ) {
+    return { status: "verified", label: "Verified" };
+  }
+
+  return { status: "unverified", label: "Unverified" };
+}
+
+async function getSafetyForPlant(plantId) {
+  const reviewStats = await getReviewStats(plantId);
+  return getSafetyFromReviewStats(reviewStats);
+}
+
 async function formatPlantItem(item, userLocation = null) {
   const typeId = item.type_ids?.[0];
   const category = await PlantCategory.findOne({ fallingFruitTypeId: typeId });
@@ -66,8 +105,8 @@ async function formatPlantItem(item, userLocation = null) {
   const stopName = stop ? toMonthName(stop) : null;
   const seasonStatus = getSeasonStatus(start, stop);
   const reviews = plantDoc?.reviews || [];
-  const reviewCount = reviews.length;
   const latestReview = reviews[reviews.length - 1] || null;
+  const safety = await getSafetyForPlant(plantDoc?._id);
 
   return {
     id: item.id,
@@ -92,13 +131,7 @@ async function formatPlantItem(item, userLocation = null) {
     fruitingStatus: latestReview?.fruitingStatus || "Not Available",
     imgUrl: null,
     distance: formatDistance(userLocation, { lat, lng }),
-    safety: {
-      //Temporary waiting for review feature finish
-      // status: "verified",
-      // label: "Verified",
-      status: reviewCount < 0 ? "verified" : "unverified",
-      label: reviewCount < 0 ? "Verified" : "Unverified",
-    },
+    safety,
     source: "Falling Fruit",
   };
 }
@@ -123,4 +156,9 @@ async function getOrCreatePlant(plantId) {
   return plant;
 }
 
-module.exports = { formatPlantItem, formatDistance, getOrCreatePlant };
+module.exports = {
+  formatPlantItem,
+  formatDistance,
+  getSafetyForPlant,
+  getOrCreatePlant,
+};

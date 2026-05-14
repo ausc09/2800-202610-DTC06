@@ -2,7 +2,11 @@ const express = require("express");
 const router = express.Router();
 
 const PlantCategory = require("../models/PlantCategory");
-const { formatDistance, formatPlantItem } = require("../helpers/plantHelpers");
+const {
+  formatDistance,
+  formatPlantItem,
+  getSafetyForPlant,
+} = require("../helpers/plantHelpers");
 const viewHistory = require("../models/viewHistory");
 const Plant = require("../models/Plant");
 
@@ -105,15 +109,18 @@ router.get("/api/plants", async (req, res) => {
       "fallingFruitId name scientificName lat lng season address safety reviews",
     );
 
-    const result = plants.map((plant) => {
-      const plantData = plant.toObject();
+    const result = await Promise.all(
+      plants.map(async (plant) => {
+        const plantData = plant.toObject();
 
-      return {
-        ...plantData,
-        id: plant.fallingFruitId,
-        distance: formatDistance(userLocation, plantData),
-      };
-    });
+        return {
+          ...plantData,
+          id: plant.fallingFruitId,
+          distance: formatDistance(userLocation, plantData),
+          safety: await getSafetyForPlant(plant._id),
+        };
+      }),
+    );
 
     res.json(result);
   } catch (error) {
