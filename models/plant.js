@@ -9,8 +9,17 @@ const reviewSchema = new mongoose.Schema({
 
 const safetySchema = new mongoose.Schema(
   {
-    status: { type: String, default: "safe" },
-    label: { type: String, default: "Safe" },
+    status: {
+      type: String,
+      enum: ["verified", "unverified"],
+      default: "unverified",
+    },
+
+    label: {
+      type: String,
+      enum: ["Verified", "Unverified"],
+      default: "Unverified",
+    },
   },
   { _id: false },
 );

@@ -195,6 +195,7 @@ router.get("/api/seed-locations", async (req, res) => {
         name: category ? category.name : "Unknown",
         scientificName: category ? category.scientificName : "Unknown",
         reviews: [],
+        photos: [],
 
         address: data.address || "Unknown",
         location: data.address || "Unknown",
@@ -220,7 +221,10 @@ router.get("/api/seed-locations", async (req, res) => {
         imgUrl: null,
         distance: "N/A",
 
-        unverified: data.unverified || false,
+        safety: {
+          status: data.unverified ? "unverified" : "verified",
+          label: data.unverified ? "Unverified" : "Verified",
+        },
 
         source: "Falling Fruit",
       };
