@@ -1,3 +1,4 @@
+const { getDistance } = require("geolib");
 const PlantCategory = require("../models/PlantCategory");
 const PlantSchema = require("../models/Plant");
 
@@ -35,10 +36,30 @@ function getSeasonStatus(start, stop) {
   return isInSeason;
 }
 
-async function formatPlantItem(item) {
+function formatDistance(userLocation, plantLocation) {
+  const userLat = Number(userLocation?.lat);
+  const userLng = Number(userLocation?.lng);
+  const plantLat = Number(plantLocation?.lat);
+  const plantLng = Number(plantLocation?.lng);
+
+  if ([userLat, userLng, plantLat, plantLng].includes(null)) {
+    return "N/A";
+  }
+
+  const distanceMeters = getDistance(
+    { latitude: userLat, longitude: userLng },
+    { latitude: plantLat, longitude: plantLng },
+  );
+
+  return (distanceMeters / 1000).toFixed(1);
+}
+
+async function formatPlantItem(item, userLocation = null) {
   const typeId = item.type_ids?.[0];
   const category = await PlantCategory.findOne({ fallingFruitTypeId: typeId });
   const plantDoc = await PlantSchema.findOne({ fallingFruitId: item.id });
+  const lat = plantDoc?.lat ?? item.lat;
+  const lng = plantDoc?.lng ?? item.lng;
   const start = plantDoc?.season_start;
   const stop = plantDoc?.season_stop;
   const startName = start ? toMonthName(start) : null;
@@ -58,8 +79,8 @@ async function formatPlantItem(item) {
     author: item.author || "Not Available",
     description: item.description || "No description available.",
     unverified: plantDoc?.unverified ?? item.unverified ?? false,
-    lat: plantDoc?.lat || item.lat,
-    lng: plantDoc?.lng || item.lng,
+    lat,
+    lng,
     lastObserved: item.updated_at
       ? new Date(item.updated_at).toDateString()
       : "Not Available",
@@ -70,7 +91,7 @@ async function formatPlantItem(item) {
     seasonStatus: seasonStatus ? "in" : "out",
     fruitingStatus: latestReview?.fruitingStatus || "Not Available",
     imgUrl: null,
-    distance: "N/A",
+    distance: formatDistance(userLocation, { lat, lng }),
     safety: {
       //Temporary waiting for review feature finish
       // status: "verified",
@@ -102,4 +123,4 @@ async function getOrCreatePlant(plantId) {
   return plant;
 }
 
-module.exports = { formatPlantItem, getOrCreatePlant };
+module.exports = { formatPlantItem, formatDistance, getOrCreatePlant };
