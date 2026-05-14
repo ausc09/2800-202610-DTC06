@@ -64,11 +64,17 @@ router.get("/plants", async (req, res) => {
 
 router.get("/api/plants", async (req, res) => {
   try {
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023`,
-    );
-    const data = await response.json();
-    const result = await Promise.all(data.map(formatPlantItem));
+    const plants = await Plant.find({
+      lat: { $exists: true },
+      lng: { $exists: true },
+      name: { $exists: true, $ne: null },
+    }).select("fallingFruitId name scientificName lat lng season address safety reviews");
+
+    const result = plants.map(p => ({
+      ...p.toObject(),
+      id: p.fallingFruitId,
+    }));
+
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: "Something went wrong" });
