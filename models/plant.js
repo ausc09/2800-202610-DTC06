@@ -44,6 +44,7 @@ const plantSchema = new mongoose.Schema({
 
   photos: { type: [String], default: [] },
   reviews: { type: [reviewSchema], default: [] },
+  photos: [String],
 });
 
 const Plant = mongoose.model("Plant", plantSchema);

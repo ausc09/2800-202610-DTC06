@@ -28,34 +28,11 @@
       </h3>
 
       <span
-        class="
-        text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
-
-        <%= plant.safety.status === 'safe'
-        ? 'bg-brand-greenPale text-brand-green'
-
-        : plant.safety.status === 'caution'
-        ? 'bg-[#F5EEDF] text-[#9C7A4D]'
-
-        : plant.safety.status === 'unsafe'
-        ? 'bg-red-100 text-red-600'
-
-        : 'bg-brand-alt text-brand-sub'
-        %>
-        "
+        class="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
+        <%= plant.safety.status === 'verified' ? 'bg-brand-greenPale text-brand-green' : 'bg-brand-alt text-brand-sub' %>"
         >
-        <% if (plant.safety.status === 'safe') { %>
-            ✓
-        <% } %>
-
-        <% if (plant.safety.status === 'caution') { %>
-            ⚠
-        <% } %>
-
-        <% if (plant.safety.status === 'unsafe') { %>
-            ✕
-        <% } %>
-
+        <% if (plant.safety.status === 'verified') { %>✓<% } %>
+        <% if (plant.safety.status === 'unverified') { %>⚠<% } %>
         <%= plant.safety.label %>
         </span>
     </div>
