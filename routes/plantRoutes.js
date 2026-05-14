@@ -68,7 +68,7 @@ router.get("/api/plants", async (req, res) => {
       lat: { $exists: true },
       lng: { $exists: true },
       name: { $exists: true, $ne: null },
-    });
+    }).select("fallingFruitId name scientificName lat lng season address safety reviews");
 
     const result = plants.map(p => ({
       ...p.toObject(),
