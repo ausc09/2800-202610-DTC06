@@ -82,17 +82,27 @@ async function main() {
  app.get("/profile", requireLogin, async (req, res) => {
   try {
     const User = require('./models/User');
-    const freshUser = await User.findById(req.user._id);
+    const ViewHistory = require('./models/viewHistory');
+
+    const freshUser = await User.findById(req.user._id).lean();
     const reviewCount = await Review.countDocuments({ userId: req.user._id });
-    const plantsSaved = freshUser.favoritePlants ? freshUser.favoritePlants.length : 0;
-    res.render("profile", { 
+    const plantsSaved = freshUser.favoritePlants?.length || 0;
+
+    // recent 3 view history
+    const activities = await ViewHistory.find({ userId: req.user._id })
+      .sort({ viewedAt: -1 })
+      .limit(3)
+      .lean();
+
+    res.render("profile", {
       user: freshUser,
       reviewCount,
       plantsSaved,
+      activities,
     });
   } catch (err) {
     console.error(err);
-    res.render("profile", { user: req.user, reviewCount: 0, plantsSaved: 0 });
+    res.render("profile", { user: req.user, reviewCount: 0, plantsSaved: 0, activities: [] });
   }
 });
 
