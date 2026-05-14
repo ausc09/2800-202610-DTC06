@@ -5,6 +5,7 @@ const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
 const savedRoutes = require("./routes/saved");
+const Review = require('./models/Review');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -78,9 +79,22 @@ async function main() {
   res.render("admin");
 });
 
-  app.get("/profile", requireLogin, (req, res) => {
-    res.render("profile", { user: req.user });
-  });
+ app.get("/profile", requireLogin, async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const freshUser = await User.findById(req.user._id);
+    const reviewCount = await Review.countDocuments({ userId: req.user._id });
+    const plantsSaved = freshUser.favoritePlants ? freshUser.favoritePlants.length : 0;
+    res.render("profile", { 
+      user: freshUser,
+      reviewCount,
+      plantsSaved,
+    });
+  } catch (err) {
+    console.error(err);
+    res.render("profile", { user: req.user, reviewCount: 0, plantsSaved: 0 });
+  }
+});
 
   app.use("/auth", authRoutes);
   app.use("/admin", require("./routes/admin"));
