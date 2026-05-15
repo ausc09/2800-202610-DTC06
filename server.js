@@ -11,6 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
+const aiTipRoutes = require("./routes/aiTip");
 
 // connect database
 function connectDB() {
@@ -33,7 +34,7 @@ async function main() {
   app.set("view engine", "ejs");
   app.use(express.static("public"));
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: "10mb" }));
 
   // CSP
   app.use((req, res, next) => {
@@ -61,6 +62,7 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
+  app.use("/api", requireLogin, aiTipRoutes);
   app.use("/saved", requireLogin, savedRoutes);
 
   app.get("/", (req, res) => {

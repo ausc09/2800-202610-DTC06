@@ -165,6 +165,74 @@
           </div>
         </div>
 
+        <% if (user) { %>
+          <!-- AI Foraging Tip -->
+          <div class="bg-brand-surface border border-[#E6F1FB] rounded-2xl shadow-md p-4 mt-4">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-semibold text-base">AI Foraging Tip</h2>
+              <span class="text-[10px] px-2 py-1 bg-[#E6F1FB] text-[#0C447C] rounded-full flex items-center gap-1">
+                <i class="fa-solid fa-sparkles text-[10px]"></i>
+                Gemini AI
+              </span>
+            </div>
+
+            <!-- Upload area -->
+            <div id="ai-upload-area"
+                class="border-2 border-dashed border-brand-border rounded-xl p-4
+                        flex flex-col items-center gap-2 cursor-pointer
+                        hover:border-brand-green transition-colors">
+              <i class="fa-solid fa-camera text-xl text-brand-muted"></i>
+              <p class="text-xs text-brand-muted">Upload a photo for AI analysis</p>
+              <div class="flex gap-2 mt-1">
+                <button type="button" id="ai-gallery-btn"
+                        class="text-[11px] px-3 py-1.5 border border-brand-border
+                              rounded-full text-brand-sub hover:border-brand-green transition-colors">
+                  <i class="fa-solid fa-image mr-1"></i>Gallery
+                </button>
+                <button type="button" id="ai-camera-btn"
+                        class="text-[11px] px-3 py-1.5 border border-brand-border
+                              rounded-full text-brand-sub hover:border-brand-green transition-colors">
+                  <i class="fa-solid fa-camera mr-1"></i>Camera
+                </button>
+              </div>
+            </div>
+            <input type="file" id="ai-photo-input" accept="image/*" capture="environment" class="hidden">
+
+            <!-- Photo preview (hidden by default) -->
+            <div id="ai-photo-preview" class="hidden mt-3 relative">
+              <img id="ai-preview-img" src="" alt="Plant photo"
+                  class="w-full h-40 object-cover rounded-xl">
+              <button type="button" id="ai-remove-photo"
+                      class="absolute top-2 right-2 w-7 h-7 bg-white rounded-full
+                            flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-x text-xs text-brand-sub"></i>
+              </button>
+            </div>
+
+            <!-- Loading state (hidden by default) -->
+            <div id="ai-loading" class="hidden mt-3 items-center gap-2 py-2">
+              <div class="w-2 h-2 rounded-full bg-[#185FA5]"></div>
+              <span class="text-xs text-brand-muted">Analyzing your photo...</span>
+            </div>
+
+            <!-- AI result (hidden by default) -->
+            <div id="ai-result" class="hidden mt-3">
+              <p id="ai-result-text" class="text-sm text-brand-sub leading-relaxed
+                                            bg-brand-alt rounded-xl p-3"></p>
+              <p class="text-[10px] text-brand-muted mt-2">
+                AI-generated. Always verify before foraging.
+              </p>
+              <button id="ai-retry-btn"
+                      class="mt-2 text-xs text-brand-sub border border-brand-border
+                            rounded-full px-3 py-1.5 flex items-center gap-1
+                            hover:border-brand-green transition-colors">
+                <i class="fa-solid fa-rotate-right text-[10px]"></i>
+                Analyze another photo
+              </button>
+            </div>
+          </div>
+        <% } %>
+
         <!-- Community Reviews -->
         <div class="mt-6">
           <div class="flex justify-between items-center mb-3">
@@ -201,6 +269,14 @@
                 class="text-sm font-medium text-brand-green">Next</button>
       </div>
     </div>
+
+    <script> 
+      window.PLANT_DATA = {
+      name: "<%= plant.name %>",
+      scientificName: "<%= plant.scientificName %>",
+      season: "<%= plant.season %>",
+      location: "<%= plant.location %>", };
+    </script>
 
     <script src="/js/plant.js"></script>
     <%- include("partials/bottomnav") %>
