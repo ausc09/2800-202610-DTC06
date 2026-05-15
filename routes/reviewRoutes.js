@@ -1,8 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
 
 const Plant = require("../models/plant");
 const Review = require("../models/review");
+const { validatePlantImage } = require("../helpers/visionHelpers");
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 router.get("/:id/new", async (req, res) => {
   try {
@@ -16,6 +23,39 @@ router.get("/:id/new", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
+  }
+});
+
+router.post("/api/validate-photo", upload.single("photo"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        passed: false,
+        message: "Please upload plant image.",
+      });
+    }
+
+    const base64Image = req.file.buffer.toString("base64");
+    const result = await validatePlantImage(base64Image);
+
+    if (!result.passed) {
+      return res.json({
+        passed: false,
+        message: "Please upload plant image.",
+      });
+    }
+
+    res.json({
+      passed: true,
+      message: "Verified photo",
+      matchedLabel: result.matchedLabel,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      passed: false,
+      message: "Please upload plant image.",
+    });
   }
 });
 
