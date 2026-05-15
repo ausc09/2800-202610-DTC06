@@ -3,7 +3,7 @@
 >
   <div
     class="w-14 h-14 rounded-xl bg-[#EEEAE4] flex items-center justify-center shrink-0"
-    id="plant-image-<%= plant.id %>"
+    id="plant-image-<%= plant._id || plant.id %>"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -28,34 +28,11 @@
       </h3>
 
       <span
-        class="
-        text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
-
-        <%= plant.safety.status === 'safe'
-        ? 'bg-brand-greenPale text-brand-green'
-
-        : plant.safety.status === 'caution'
-        ? 'bg-[#F5EEDF] text-[#9C7A4D]'
-
-        : plant.safety.status === 'unsafe'
-        ? 'bg-red-100 text-red-600'
-
-        : 'bg-brand-alt text-brand-sub'
-        %>
-        "
+        class="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
+        <%= plant.safety.status === 'verified' ? 'bg-brand-greenPale text-brand-green' : 'bg-brand-alt text-brand-sub' %>"
         >
-        <% if (plant.safety.status === 'safe') { %>
-            ✓
-        <% } %>
-
-        <% if (plant.safety.status === 'caution') { %>
-            ⚠
-        <% } %>
-
-        <% if (plant.safety.status === 'unsafe') { %>
-            ✕
-        <% } %>
-
+        <% if (plant.safety.status === 'verified') { %>✓<% } %>
+        <% if (plant.safety.status === 'unverified') { %>⚠<% } %>
         <%= plant.safety.label %>
         </span>
     </div>
@@ -69,31 +46,39 @@
     >
       <span> <i class="fas fa-map-marker-alt"></i> <%= plant.location %></span>
       <span>•</span>
-      <span><%= plant.distance %></span>
+      <span><%= plant.distance %> km</span>
       <span>•</span>
       <span class="text-brand-greenMid font-medium"><%= plant.season %></span>
     </div>
   </div>
 
-  <div
-    class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
-  >
-    <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
-    <span><%= plant.source %></span>
-  </div>
+  <% if (locals.hideSource && locals.showSave) { %>
+    <%- include("./saveButton", { plant, buttonClass: "bg-transparent hover:bg-transparent" }) %>
+  <% } else if (!locals.hideSource) { %>
+    <div
+      class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
+    >
+      <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
+      <span><%= plant.source %></span>
+    </div>
+  <% } %>
 </div>
 
 <script>
-  const plant = <%- JSON.stringify(plant) %>;
-  if (plant.imgUrl) {
-    const imgContainer = document.getElementById(
-  "plant-image-<%= plant.id %>",
-  );
-    const img = document.createElement("img");
-    img.src = plant.imgUrl;
-    img.alt = plant.name;
-    img.className = "w-full h-full object-cover rounded-xl";
-    imgContainer.innerHTML = "";
-    imgContainer.appendChild(img);
-  }
+  (() => {
+    const currentPlant = <%- JSON.stringify(plant) %>;
+    if (currentPlant.imgUrl) {
+      const imgContainer = document.getElementById(
+        "plant-image-<%= plant._id || plant.id %>",
+      );
+      if (!imgContainer) return;
+      const img = document.createElement("img");
+      img.src = currentPlant.imgUrl;
+      img.alt = currentPlant.name;
+      img.className = "w-full h-full object-cover rounded-xl";
+
+      imgContainer.innerHTML = "";
+      imgContainer.appendChild(img);
+    }
+  })();
 </script>

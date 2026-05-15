@@ -15,28 +15,123 @@
     </button>
   </div>
 
-  <%- include("partials/searchbar", { placeholder: "Search plants..." }) %>
+  <%- include("partials/searchbar", {
+  placeholder: "Search plants...",
+  screen: "plants",
+  search: search || ""
+}) %>
 
-    <div class="flex gap-2 px-4 pb-3 overflow-x-auto">
-      <button class="bg-brand-charcoal text-white text-xs font-semibold px-4 py-2 rounded-full">All</button>
-      <button class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full">Nearby</button>
-      <button class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full">In Season</button>
-      <button class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full">Safe Only</button>
-    </div>
+   <%
+  function makeFilterUrl(overrides = {}) {
+    const params = new URLSearchParams();
+
+    const nextVerified = overrides.verified ?? verified;
+    const nextInSeason = overrides.inSeason ?? inSeason;
+    const nextSafeOnly = overrides.safeOnly ?? safeOnly;
+
+    if (nextVerified) params.set("verified", "true");
+    if (nextInSeason) params.set("inSeason", "true");
+    if (nextSafeOnly) params.set("safeOnly", "true");
+
+    if (search) params.set("search", search);
+
+    return `/plants/1${params.toString() ? `?${params.toString()}` : ""}`;
+  }
+%>
+
+  <div class="flex gap-2 px-4 pb-3 overflow-x-auto">
+    <button
+      onclick="window.location.href='/plants/1'"
+      class="<%= !verified && !inSeason && !safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      All
+    </button>
+
+    <button
+      onclick="window.location.href='<%= makeFilterUrl({ verified: !verified }) %>'"
+      class="<%= verified ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      Verified
+    </button>
+
+    <button
+      onclick="window.location.href='<%= makeFilterUrl({ inSeason: !inSeason }) %>'"
+      class="<%= inSeason ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      In Season
+    </button>
+
+    <button
+      onclick="window.location.href='<%= makeFilterUrl({ safeOnly: !safeOnly }) %>'"
+      class="<%= safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      Safe Only
+    </button>
+  </div>
 
     <p class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
       <%= plants.length %> PLANTS NEAR YOU
     </p>
 
-    <div class="px-4 flex flex-col gap-3 pb-24">
+    <div class="px-4 flex flex-col gap-3">
       <% plants.forEach(plant=> { %>
-        <a href="/plant/<%= plant.id %>" class="block">
+        <a href="/plant/<%= plant.fallingFruitId %>" class="block">
           <%- include("partials/plantcard", { plant }) %>
         </a>
         <% }) %>
     </div>
+    <div class="flex items-center justify-center pb-24 mt-5 gap-2">
+      <%
+  const params = new URLSearchParams();
+
+  if (verified) params.set("verified", "true");
+  if (inSeason) params.set("inSeason", "true");
+  if (safeOnly) params.set("safeOnly", "true");
+  if (type && type !== "all") params.set("type", type);
+  if (search) params.set("search", search);
+
+  const paginationQuery = params.toString() ? `?${params.toString()}` : "";
+%>
+
+      <% if (page !== 1) { %>
+        <button
+          onclick="window.location.href='/plants/1<%= paginationQuery %>'"
+          class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full hover:bg-brand-greenMid hover:text-white"
+        >
+          First
+        </button>
+      <% } %>
+
+      <button
+        onclick="window.location.href='/plants/<%= page - 1 %><%= paginationQuery %>'"
+        <%= page === 1 ? "disabled" : "" %>
+        class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full hover:bg-brand-greenMid hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+      >
+        Previous
+      </button>
+
+      <span class="text-xs text-brand-muted px-2">
+        Page <%= page %> of <%= totalPages %>
+      </span>
+
+      <button
+        onclick="window.location.href='/plants/<%= page + 1 %><%= paginationQuery %>'"
+        <%= page === totalPages ? "disabled" : "" %>
+        class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full hover:bg-brand-greenMid hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+      >
+        Next
+      </button>
+
+      <% if (page !== totalPages) { %>
+        <button
+          onclick="window.location.href='/plants/<%= totalPages %><%= paginationQuery %>'"
+          class="bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full hover:bg-brand-greenMid hover:text-white"
+        >
+          Last
+        </button>
+      <% } %>
+    </div>
 
     <%- include("partials/bottomnav") %>
-</body>
-
+  </body>
 </html>

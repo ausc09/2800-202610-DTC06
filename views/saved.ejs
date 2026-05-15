@@ -13,9 +13,7 @@
 
     <% if (!savedPlants || savedPlants.length === 0) { %>
       <main class="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-8 text-center">
-        <div
-          class="w-16 h-16 rounded-2xl bg-[#EEEAE4] border border-brand-borderLight flex items-center justify-center mb-5"
-        >
+        <div class="w-16 h-16 rounded-2xl bg-[#EEEAE4] border border-brand-borderLight flex items-center justify-center mb-5">
           <i class="fa-regular fa-bookmark text-2xl text-brand-muted"></i>
         </div>
 
@@ -27,20 +25,66 @@
           Explore the map and tap the bookmark icon to save plants you like
         </p>
 
-        <a
-          href="/map"
-          class="text-brand-green font-semibold text-sm hover:text-brand-greenMid"
-        >
+        <a href="/map" class="text-brand-green font-semibold text-sm hover:text-brand-greenMid">
           Explore map
           <i class="fa-solid fa-arrow-right ml-1"></i>
         </a>
       </main>
     <% } else { %>
       <main class="flex flex-col gap-4 p-4">
-        <%- include("partials/searchBar", { placeholder: "Search saved plants..." }) %>
-        <% savedPlants.forEach((plant) => { %>
-          <%- include("partials/savedPlantCard", { plant: plant }) %>
-        <% }) %>
+        <%- include("partials/searchbar", {
+          placeholder: "Search saved plants...",
+          screen: "saved",
+          search: ""
+        }) %>
+
+        <div class="flex gap-2 overflow-x-auto">
+          <button
+            data-saved-filter="all"
+            class="saved-filter-btn bg-brand-charcoal text-white text-xs font-medium px-4 py-1.5 rounded-full"
+          >
+            All
+          </button>
+
+          <button
+            data-saved-filter="verified"
+            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
+          >
+            Verified
+          </button>
+
+          <button
+            data-saved-filter="in-season"
+            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
+          >
+            In Season
+          </button>
+
+          <button
+            data-saved-filter="safeOnly"
+            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
+          >
+            Safe Only
+          </button>
+        </div>
+
+        <div id="savedPlantsContainer" class="flex flex-col gap-4">
+          <% savedPlants.forEach((plant) => { %>
+            <div
+              class="plant-item relative"
+              data-name="<%= plant.name || '' %>"
+              data-scientific="<%= plant.scientificName || '' %>"
+              data-location="<%= plant.location || plant.address || '' %>"
+              data-safety="<%= plant.safety?.status || '' %>"
+              data-verified="<%= plant.unverified === false ? 'true' : 'false' %>"
+              data-in-season="<%= plant.season && plant.season !== 'Unknown' ? 'true' : 'false' %>"
+            >
+              <a href="/plant/<%= plant.fallingFruitId %>" class="block">
+                <%- include("partials/plantCard", { plant: plant, hideSource: true, showSave: true }) %>
+              </a>
+            </div>
+          <% }) %>
+        </div>
       </main>
     <% } %>
     <%- include("partials/bottomnav") %>

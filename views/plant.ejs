@@ -12,10 +12,9 @@
         <p class="text-brand-muted text-sm text-center">
           plant photo<br />upload or community photo
         </p>
-        <span
-          span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold"
-          >● API Source Here</span
-        >
+        <span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold">
+          ● <%= plant.source %>
+        </span>
         <!-- Back button -->
         <button
           onclick="history.back()"
@@ -23,7 +22,6 @@
         >
           <i class="fa-solid fa-angle-left w-5 h-5 text-brand-sub"></i>
         </button>
-        <!-- Save button -->
         <!-- Save button -->
       <%- include("partials/saveButton", { plant, buttonClass: "absolute top-3 right-3" }) %>
       </div>
@@ -40,11 +38,6 @@
               <i class="fa-solid fa-location-dot"></i> <%= plant.location %>
             </p>
           </div>
-          <span
-            class="bg-brand-greenPale text-brand-green text-xs font-semibold px-2 py-1 rounded-full"
-          >
-            ✓ Safe
-          </span>
         </div>
 
         <!-- Details Card -->
@@ -78,10 +71,65 @@
               <p class="text-sm font-semibold mt-1"><%= plant.season %></p>
             </div>
             <div>
-              <p class="text-xs text-brand-muted tracking-widest">ACCESS</p>
-              <p class="text-sm font-semibold mt-1"><%= plant.access %></p>
+              <p class="text-xs text-brand-muted tracking-widest">DISTANCE</p>
+              <p class="text-sm font-semibold mt-1">
+                <%= distance %> km
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest">AUTHOR</p>
+              <p class="text-sm font-semibold mt-1"><%= plant.author %></p>
             </div>
           </div>
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest mb-2">
+                CATEGORIES
+              </p>
+              <% if (plant.categories && plant.categories.length > 0) { %>
+              <div class="flex flex-wrap gap-2">
+                <% plant.categories.forEach((category) => { %>
+                <span class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full">
+                  <%= category %>
+                </span>
+                <% }) %>
+              </div>
+              <% } else { %>
+              <p class="text-sm font-semibold mt-1">Not Available</p>
+              <% } %>
+            </div>
+            <div>
+              <p class="text-xs text-brand-muted tracking-widest mb-2">
+                LEARNING SOURCES
+              </p>
+              <% if (plant.urls && (plant.urls.wikipedia || plant.urls.usda)) { %>
+              <div class="flex flex-wrap gap-3 text-sm font-semibold">
+                <% if (plant.urls.wikipedia) { %>
+                <a href="<%= plant.urls.wikipedia %>" target="_blank" rel="noopener noreferrer" class="text-brand-green hover:text-brand-greenMid">
+                  Wikipedia
+                </a>
+                <% } %>
+                <% if (plant.urls.usda) { %>
+                <a href="<%= plant.urls.usda %>" target="_blank" rel="noopener noreferrer" class="text-brand-green hover:text-brand-greenMid">
+                  USDA Plant Profile
+                </a>
+                <% } %>
+              </div>
+              <% } else { %>
+              <p class="text-sm font-semibold mt-1">Not Available</p>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <p class="text-xs text-brand-muted tracking-widest">
+              DESCRIPTION
+            </p>
+            <p class="text-sm font-semibold leading-relaxed mt-1">
+              <%= plant.description %>
+            </p>
+          </div>
+
           <hr class="border-brand-border my-3" />
           <div class="flex justify-between items-end">
             <div>
@@ -92,11 +140,15 @@
                 <%= plant.fruitingStatus %>
               </p>
             </div>
-            <span
-              class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full"
-            >
+            <% if (plant.seasonStatus === 'in') { %>
+            <span class="bg-brand-greenPale text-brand-green text-xs font-semibold px-3 py-1 rounded-full">
               ● In season
             </span>
+            <% } else if (plant.seasonStatus === 'out') { %>
+            <span class="bg-brand-alt text-brand-sub text-xs font-semibold px-3 py-1 rounded-full">
+              ● Out of season
+            </span>
+            <% } %>
           </div>
         </div>
 
@@ -119,19 +171,185 @@
           </div>
         </div>
 
+        <% if (user) { %>
+          <!-- AI Foraging Tip -->
+          <div class="bg-brand-surface border border-[#E6F1FB] rounded-2xl shadow-md p-4 mt-4">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-semibold text-base">AI Foraging Tip</h2>
+              <span class="text-[10px] px-2 py-1 bg-[#E6F1FB] text-[#0C447C] rounded-full flex items-center gap-1">
+                <i class="fa-solid fa-sparkles text-[10px]"></i>
+                Gemini AI
+              </span>
+            </div>
+
+            <!-- Upload area -->
+            <div id="ai-upload-area"
+                class="border-2 border-dashed border-brand-border rounded-xl p-4
+                        flex flex-col items-center gap-2 cursor-pointer
+                        hover:border-brand-green transition-colors">
+              <i class="fa-solid fa-camera text-xl text-brand-muted"></i>
+              <p class="text-xs text-brand-muted">Upload a photo for AI analysis</p>
+              <div class="flex gap-2 mt-1">
+                <button type="button" id="ai-gallery-btn"
+                        class="text-[11px] px-3 py-1.5 border border-brand-border
+                              rounded-full text-brand-sub hover:border-brand-green transition-colors">
+                  <i class="fa-solid fa-image mr-1"></i>Gallery
+                </button>
+                <button type="button" id="ai-camera-btn"
+                        class="text-[11px] px-3 py-1.5 border border-brand-border
+                              rounded-full text-brand-sub hover:border-brand-green transition-colors">
+                  <i class="fa-solid fa-camera mr-1"></i>Camera
+                </button>
+              </div>
+            </div>
+            <input type="file" id="ai-photo-input" accept="image/*" capture="environment" class="hidden">
+
+            <!-- Photo preview (hidden by default) -->
+            <div id="ai-photo-preview" class="hidden mt-3 relative">
+              <img id="ai-preview-img" src="" alt="Plant photo"
+                  class="w-full h-40 object-cover rounded-xl">
+              <button type="button" id="ai-remove-photo"
+                      class="absolute top-2 right-2 w-7 h-7 bg-white rounded-full
+                            flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-x text-xs text-brand-sub"></i>
+              </button>
+            </div>
+
+            <!-- Loading state (hidden by default) -->
+            <div id="ai-loading" class="hidden mt-3 items-center gap-2 py-2">
+              <div class="w-2 h-2 rounded-full bg-[#185FA5]"></div>
+              <span class="text-xs text-brand-muted">Analyzing your photo...</span>
+            </div>
+
+            <!-- AI result (hidden by default) -->
+            <div id="ai-result" class="hidden mt-3">
+              <p id="ai-result-text" class="text-sm text-brand-sub leading-relaxed
+                                            bg-brand-alt rounded-xl p-3"></p>
+              <p class="text-[10px] text-brand-muted mt-2">
+                AI-generated. Always verify before foraging.
+              </p>
+              <button id="ai-retry-btn"
+                      class="mt-2 text-xs text-brand-sub border border-brand-border
+                            rounded-full px-3 py-1.5 flex items-center gap-1
+                            hover:border-brand-green transition-colors">
+                <i class="fa-solid fa-rotate-right text-[10px]"></i>
+                Analyze another photo
+              </button>
+            </div>
+          </div>
+        <% } %>
+
         <!-- Community Reviews -->
         <div class="mt-6">
           <div class="flex justify-between items-center mb-3">
-            <h2 class="font-semibold text-base">Community Reviews</h2>
+            <div>
+              <h2 class="font-semibold text-base">Community Reviews</h2>
+              <p class="text-xs text-brand-muted">
+                <%= reviews.length %> reviews
+              </p>
+            </div>
             <div class="relative">
-              <sspan id="add-yours-btn" class="text-brand-green text-sm font-semibold cursor-pointer">
+              <a id="add-yours-btn" href="/reviews/<%= plant.fallingFruitId %>/new" class="text-brand-green text-sm font-semibold cursor-pointer">
                 Add yours
-              </span>
+              </a>
             </div>
           </div>
-          <div class="bg-brand-surface border border-brand-border rounded-2xl shadow-md p-4">
-            <p class="text-brand-muted text-sm">No reviews yet.</p>
-          </div>
+          <% if (reviews.length > 0) { %>
+            <div class="flex flex-col gap-3">
+              <% reviews.forEach((review) => { %>
+                <%
+                  const displayName = review.username || "Anonymous";
+                  const avatarInitial = displayName.trim().charAt(0).toUpperCase() || "?";
+                  const rating = Math.max(0, Math.min(5, Number(review.rating) || 0));
+                  const reviewDate = review.date
+                    ? new Date(review.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Date unavailable";
+                  const comment = review.comment || "No written comment.";
+                  const commentPreview = comment.length > 120
+                    ? `${comment.slice(0, 120).trim()}...`
+                    : comment;
+                %>
+                <details class="review-accordion group bg-brand-surface border border-brand-border rounded-2xl shadow-md overflow-hidden">
+                  <summary class="list-none cursor-pointer p-4 [&::-webkit-details-marker]:hidden">
+                    <div class="flex items-start gap-3">
+                      <div class="w-10 h-10 rounded-full bg-brand-greenPale text-brand-green font-semibold flex items-center justify-center shrink-0">
+                        <%= avatarInitial %>
+                      </div>
+
+                      <div class="min-w-0 flex-1">
+                        <div class="flex justify-between items-start gap-3">
+                          <p class="text-sm font-semibold text-brand-text truncate">
+                            <%= displayName %>
+                          </p>
+                          <div class="flex items-center gap-2 shrink-0">
+                            <p class="text-xs text-brand-muted whitespace-nowrap">
+                              <%= reviewDate %>
+                            </p>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-brand-muted transition-transform group-open:rotate-180"></i>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mt-2 flex-wrap">
+                          <div class="flex items-center gap-0.5 text-xs" aria-label="<%= rating %> out of 5 stars">
+                            <% for (let i = 1; i <= 5; i++) { %>
+                              <i class="fa-solid fa-star <%= i <= rating ? 'text-brand-star' : 'text-brand-border' %>"></i>
+                            <% } %>
+                          </div>
+                          <span class="bg-brand-greenPale text-brand-green text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                            <%= review.fruitingStatus %>
+                          </span>
+                        </div>
+
+                        <p class="text-sm text-brand-sub leading-relaxed mt-2">
+                          <%= commentPreview %>
+                        </p>
+                      </div>
+                    </div>
+                  </summary>
+
+                  <div class="px-4 pb-4">
+                    <div class="ml-[52px]">
+                      <div class="border-t border-brand-border pt-3">
+                        <p class="text-xs text-brand-muted font-semibold tracking-widest mb-1">
+                          FULL REVIEW
+                        </p>
+                        <p class="text-sm text-brand-text leading-relaxed">
+                          <%= comment %>
+                        </p>
+                      </div>
+
+                      <% if (review.foodSafetyNotes) { %>
+                      <div class="bg-brand-alt rounded-xl p-3 mt-3">
+                        <p class="text-xs text-brand-muted font-semibold tracking-widest mb-1">
+                          FOOD SAFETY NOTES
+                        </p>
+                        <p class="text-sm text-brand-sub leading-relaxed">
+                          <%= review.foodSafetyNotes %>
+                        </p>
+                      </div>
+                      <% } %>
+
+                      <% if (review.photoSrc) { %>
+                      <img
+                        src="<%= review.photoSrc %>"
+                        alt="Review photo from <%= displayName %>"
+                        class="w-full h-44 object-cover rounded-2xl mt-3"
+                      />
+                      <% } %>
+                    </div>
+                  </div>
+                </details>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="bg-brand-surface border border-brand-border rounded-2xl shadow-md p-4">
+              <p class="text-brand-muted text-sm">No reviews yet.</p>
+            </div>
+          <% } %>
         </div>
       </div>
     </div>
@@ -155,6 +373,27 @@
                 class="text-sm font-medium text-brand-green">Next</button>
       </div>
     </div>
+
+    <script> 
+      window.PLANT_DATA = {
+      name: "<%= plant.name %>",
+      scientificName: "<%= plant.scientificName %>",
+      season: "<%= plant.season %>",
+      location: "<%= plant.location %>", };
+      document.querySelectorAll(".review-accordion").forEach((accordion) => {
+        accordion.addEventListener("toggle", () => {
+          if (!accordion.open) {
+            return;
+          }
+
+          document.querySelectorAll(".review-accordion[open]").forEach((openAccordion) => {
+            if (openAccordion !== accordion) {
+              openAccordion.removeAttribute("open");
+            }
+          });
+        });
+      });
+    </script>
 
     <script src="/js/plant.js"></script>
     <%- include("partials/bottomnav") %>
