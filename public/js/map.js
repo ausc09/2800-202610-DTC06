@@ -158,6 +158,21 @@ function getUserLocation() {
   });
 }
 
+async function saveUserLocation(coords) {
+  if (!coords) return;
+
+  try {
+    await fetch("/api/user-location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(coords),
+    });
+  } catch (err) {
+    console.error("Failed to save user location:", err);
+  }
+}
+
+// Fetch plant locations from Falling Fruit API and add markers
 async function loadPlants() {
   try {
     showMapLoader();

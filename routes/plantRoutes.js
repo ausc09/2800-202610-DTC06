@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const PlantCategory = require("../models/plantCategory");
+const PlantCategory = require("../models/PlantCategory");
 const { formatPlantItem } = require("../helpers/plantHelpers");
-const Plant = require("../models/plant");
-const Review = require("../models/review");
 const viewHistory = require("../models/viewHistory");
 
 function reviewPhotoSrc(review) {
@@ -17,6 +15,39 @@ function reviewPhotoSrc(review) {
 
   return `data:${review.photo.contentType};base64,${photoBuffer.toString("base64")}`;
 }
+
+function getUserLocation(req) {
+  const source =
+    req.query.lat !== undefined && req.query.lng !== undefined
+      ? req.query
+      : req.session.userLocation;
+
+  const lat = Number(source.lat);
+  const lng = Number(source.lng);
+  return { lat, lng };
+}
+
+router.post("/api/user-location", (req, res) => {
+  const lat = Number(req.body.lat);
+  const lng = Number(req.body.lng);
+  req.session.userLocation = { lat, lng };
+  res.status(200).json({ message: "Location saved" });
+});
+
+router.get("/plant/information/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const response = await fetch(
+      `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
+    );
+    const data = await response.json();
+    const plant = await formatPlantItem(data);
+    res.json(plant);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
 
 router.get("/plant/:id", async (req, res) => {
   try {
@@ -118,6 +149,7 @@ router.get("/plants/:page", async (req, res) => {
 
 router.get("/api/plants", async (req, res) => {
   try {
+    const userLocation = getUserLocation(req);
     const search = req.query.search?.trim() || "";
     const type = req.query.type || "all";
 
@@ -132,33 +164,18 @@ router.get("/api/plants", async (req, res) => {
       name: { $exists: true, $ne: null },
     };
 
-    if (!isNaN(north) && !isNaN(south) && !isNaN(east) && !isNaN(west)) {
-      query.lat = { $gte: south, $lte: north };
-      query.lng = { $gte: west, $lte: east };
-    }
+    const plants = await Plant.find(query).select(
+      "fallingFruitId name scientificName lat lng season address safety reviews",
+    );
 
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { scientificName: { $regex: search, $options: "i" } },
-        { address: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (type !== "all") {
-      query.name = { $regex: type, $options: "i" };
-    }
-
-    const plants = await Plant.find(query)
-      .limit(300)
-      .select(
-        "fallingFruitId name scientificName lat lng season address location safety reviews unverified source distance",
-      );
-
-    const result = plants.map((p) => ({
-      ...p.toObject(),
-      id: p.fallingFruitId,
-    }));
+    const result = await Promise.all(
+      plants.map(async (p) => ({
+        ...p.toObject(),
+        id: p.fallingFruitId,
+        distance: formatDistance(userLocation, p),
+        safety: await getSafetyForPlant(p._id),
+      })),
+    );
 
     res.json(result);
   } catch (error) {
