@@ -59,6 +59,28 @@ function hideMapLoader() {
 // Initialize map centered on Vancouver
 const map = L.map("map").setView([49.2827, -123.1207], 13);
 
+let userMarker = null;
+
+getUserLocation().then((coords) => {
+  if (coords) {
+    map.setView([coords.lat, coords.lng], 15);
+
+    userMarker = L.circleMarker([coords.lat, coords.lng], {
+      radius: 10,
+      fillColor: "#4A90D9",
+      color: "#fff",
+      weight: 3,
+      fillOpacity: 1,
+    }).addTo(map);
+
+    userMarker.bindTooltip("You are here", {
+      permanent: false,
+      direction: "top",
+      offset: [0, -10],
+    });
+  }
+});
+
 // Add CartoDB light map tiles
 L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
   attribution: "© OpenStreetMap contributors © CARTO",
