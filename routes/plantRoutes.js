@@ -29,6 +29,10 @@ router.get("/plant/:id", async (req, res) => {
   }
 });
 
+router.get("/plant/:id/review", (req, res) => {
+  res.redirect(`/reviews/${req.params.id}/new`);
+});
+
 router.get("/plants/:page", async (req, res) => {
   try {
     const page = Number(req.params.page) || 1;

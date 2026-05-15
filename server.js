@@ -5,7 +5,8 @@ const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
 const savedRoutes = require("./routes/saved");
-const Review = require('./models/Review');
+const reviewRoutes = require("./routes/reviewRoutes");
+const Review = require("./models/review");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -62,6 +63,7 @@ async function main() {
   // Routes
   app.use(plantRoutes);
   app.use("/saved", requireLogin, savedRoutes);
+  app.use("/reviews", requireLogin, reviewRoutes);
 
   app.get("/", (req, res) => {
     res.redirect("/welcome");
@@ -75,36 +77,41 @@ async function main() {
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
   app.get("/admin", requireLogin, (req, res) => {
-  if (req.user.role !== 'admin') return res.redirect('/');
-  res.render("admin");
-});
+    if (req.user.role !== "admin") return res.redirect("/");
+    res.render("admin");
+  });
 
- app.get("/profile", requireLogin, async (req, res) => {
-  try {
-    const User = require('./models/User');
-    const ViewHistory = require('./models/viewHistory');
+  app.get("/profile", requireLogin, async (req, res) => {
+    try {
+      const User = require("./models/User");
+      const ViewHistory = require("./models/viewHistory");
 
-    const freshUser = await User.findById(req.user._id).lean();
-    const reviewCount = await Review.countDocuments({ userId: req.user._id });
-    const plantsSaved = freshUser.favoritePlants?.length || 0;
+      const freshUser = await User.findById(req.user._id).lean();
+      const reviewCount = await Review.countDocuments({ userId: req.user._id });
+      const plantsSaved = freshUser.favoritePlants?.length || 0;
 
-    // recent 3 view history
-    const activities = await ViewHistory.find({ userId: req.user._id })
-      .sort({ viewedAt: -1 })
-      .limit(3)
-      .lean();
+      // recent 3 view history
+      const activities = await ViewHistory.find({ userId: req.user._id })
+        .sort({ viewedAt: -1 })
+        .limit(3)
+        .lean();
 
-    res.render("profile", {
-      user: freshUser,
-      reviewCount,
-      plantsSaved,
-      activities,
-    });
-  } catch (err) {
-    console.error(err);
-    res.render("profile", { user: req.user, reviewCount: 0, plantsSaved: 0, activities: [] });
-  }
-});
+      res.render("profile", {
+        user: freshUser,
+        reviewCount,
+        plantsSaved,
+        activities,
+      });
+    } catch (err) {
+      console.error(err);
+      res.render("profile", {
+        user: req.user,
+        reviewCount: 0,
+        plantsSaved: 0,
+        activities: [],
+      });
+    }
+  });
 
   app.use("/auth", authRoutes);
   app.use("/admin", require("./routes/admin"));
