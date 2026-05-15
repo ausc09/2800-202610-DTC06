@@ -66,6 +66,7 @@ router.post("/ai-foraging-tip", async (req, res) => {
                     3. Best time to harvest
                     4. How to prepare/eat safely
                     5. WARNING: any toxic lookalikes
+                    6. Based on the photo, describe the current growth stage (flowering, fruiting, dormant, etc.) and whether it's ready to harvest now.
 
                     IMPORTANT: If the photo does not show
                     a plant, respond with exactly:
@@ -75,6 +76,7 @@ router.post("/ai-foraging-tip", async (req, res) => {
                     start with: "⚠️ Low confidence:"
 
                     Keep response under 150 words.
+                    Separate each point with a blank line.
                     Be practical and safety-focused.`;
 
     // MULTI-STEP: call Gemini Vision API

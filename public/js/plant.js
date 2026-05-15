@@ -212,15 +212,15 @@ async function analyzePhoto(dataUrl) {
       aiResultText.textContent =
         "⚠ No plant detected. Please upload a clear photo.";
       aiResultText.className =
-        "text-sm leading-relaxed bg-red-50 text-red-600 rounded-xl p-3";
+        "text-sm leading-relaxed bg-red-50 text-red-600 rounded-xl p-3 whitespace-pre-line";
     } else if (data.lowConfidence) {
       aiResultText.textContent = "⚠️ Low confidence: " + data.tip;
       aiResultText.className =
-        "text-sm leading-relaxed bg-amber-50 text-amber-700 rounded-xl p-3";
+        "text-sm leading-relaxed bg-amber-50 text-amber-700 rounded-xl p-3 whitespace-pre-line";
     } else {
       aiResultText.textContent = data.tip;
       aiResultText.className =
-        "text-sm text-brand-sub leading-relaxed bg-brand-alt rounded-xl p-3";
+        "text-sm text-brand-sub leading-relaxed bg-brand-alt rounded-xl p-3 whitespace-pre-line";
     }
 
     aiResult.classList.remove("hidden");
