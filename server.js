@@ -80,6 +80,10 @@ async function main() {
     res.render("profile", { user: req.user });
   });
 
+  app.get("review", requireLogin, (req, res) => {
+    res.render("addReview")
+  })
+
   app.use("/auth", authRoutes);
 
   app.listen(PORT, () => {

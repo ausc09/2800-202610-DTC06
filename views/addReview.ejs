@@ -63,8 +63,7 @@
       </div>
     </div>
 
-    <form action="/review" method="POST">
-      <input type="hidden" name="plantId" value="<%= plant._id %>">
+    <form action="/reviews/<%= plant._id %>" method="POST" enctype="multipart/form-data">
 
 
 
@@ -174,7 +173,7 @@
         Write your review
         <span class="text-brand-muted font-normal normal-case tracking-normal ml-1">(optional)</span>
         </label>
-        <textarea name="comment" id="review-text" rows="3" maxlength="500"
+        <textarea name="review" id="review-text" rows="3" maxlength="500"
                   placeholder="Share your experience foraging this plant..."
                   class="w-full bg-brand-surface border border-brand-border rounded-2xl
                          px-4 py-3 text-sm text-brand-text placeholder-brand-muted
@@ -191,7 +190,7 @@
         <p class="text-xs text-brand-muted mb-2">
           How do you know it's safe to eat? What should others watch out for?
         </p>
-        <textarea name="foodSafetyNotes" rows="2" maxlength="300"
+        <textarea name="safetyNotes" rows="2" maxlength="300"
                   placeholder="e.g. Make sure berries are fully ripe, avoid unripe ones..."
                   class="w-full bg-brand-surface border border-brand-border rounded-2xl
                          px-4 py-3 text-sm text-brand-text placeholder-brand-muted
