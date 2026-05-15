@@ -1,3 +1,14 @@
+async function toggle2FA() {
+  const isEnabled = document.getElementById('toggle-track').style.background === 'rgb(45, 106, 79)';
+  if (!isEnabled) {
+    window.location.href = '/setup-2fa';
+  } else {
+    if (!confirm('Are you sure you want to disable 2FA?')) return;
+    const res = await fetch('/auth/2fa/disable', { method: 'POST' });
+    if (res.ok) window.location.reload();
+  }
+}
+
 async function logout() {
   const res = await fetch('/auth/logout', { method: 'POST' });
   if (res.ok) {

@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/ausc09/2800-202610-DTC06#readme",
   "dependencies": {
+    "@google/genai": "^2.2.0",
     "bcryptjs": "^3.0.3",
     "connect-mongo": "^6.0.0",
     "dotenv": "^17.4.2",

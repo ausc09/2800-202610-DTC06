@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
   googleId:         { type: String, sparse: true },
   twoFactorSecret:  { type: String }, //maybe delete later
   twoFactorEnabled: { type: Boolean, default: false }, //maybe delete later
-  favoritePlants:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plant' }], //Plant id
+  favoritePlants:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plant' }], aiTipLastUsed: { type: Date, default: null }, //Plant id
 }, { timestamps: true });
 
 UserSchema.pre('save', async function () {

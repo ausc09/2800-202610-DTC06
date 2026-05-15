@@ -93,6 +93,35 @@
         </div>
       </div>
 
+      <!-- 2FA Toggle -->
+      <div
+        class="flex w-full px-4 py-4 mb-4 bg-brand-surface border border-brand-border rounded-2xl items-center justify-between"
+      >
+        <div class="flex flex-1 items-center gap-3">
+          <i
+            data-lucide="shield-check"
+            class="flex-shrink-0 w-5 h-5 text-brand-green"
+          ></i>
+          <div>
+            <p class="text-sm font-medium">Two-Factor Authentication</p>
+            <p class="text-xs text-brand-muted">
+              Extra security for your account
+            </p>
+          </div>
+        </div>
+        <div
+          onclick="toggle2FA()"
+          id="toggle-track"
+          class="flex-shrink-0"
+          style="width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s;background:<%= user.twoFactorEnabled ? '#2d6a4f' : '#e0dbd2' %>"
+        >
+          <div
+            id="toggle-thumb"
+            style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:2px;transition:left 0.2s;left:<%= user.twoFactorEnabled ? '22px' : '2px' %>"
+          ></div>
+        </div>
+      </div>
+
       <!-- Stats -->
       <div class="grid grid-cols-2 mb-8 gap-3">
         <div
