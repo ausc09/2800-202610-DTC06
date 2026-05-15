@@ -39,35 +39,35 @@
   }
 %>
 
-<div class="flex gap-2 px-4 pb-3 overflow-x-auto">
-  <button
-    onclick="window.location.href='/plants/1'"
-    class="<%= !verified && !inSeason && !safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-alt text-brand-sub' %> text-xs font-semibold px-4 py-2 rounded-full"
-  >
-    All
-  </button>
+  <div class="flex gap-2 px-4 pb-3 overflow-x-auto">
+    <button
+      onclick="window.location.href='/plants/1'"
+      class="<%= !verified && !inSeason && !safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      All
+    </button>
 
-  <button
-    onclick="window.location.href='<%= makeFilterUrl({ verified: !verified }) %>'"
-    class="<%= verified ? 'bg-brand-charcoal text-white' : 'bg-brand-alt text-brand-sub' %> text-xs font-semibold px-4 py-2 rounded-full"
-  >
-    Verified
-  </button>
+    <button
+      onclick="window.location.href='<%= makeFilterUrl({ verified: !verified }) %>'"
+      class="<%= verified ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      Verified
+    </button>
 
-  <button
-    onclick="window.location.href='<%= makeFilterUrl({ inSeason: !inSeason }) %>'"
-    class="<%= inSeason ? 'bg-brand-charcoal text-white' : 'bg-brand-alt text-brand-sub' %> text-xs font-semibold px-4 py-2 rounded-full"
-  >
-    In Season
-  </button>
+    <button
+      onclick="window.location.href='<%= makeFilterUrl({ inSeason: !inSeason }) %>'"
+      class="<%= inSeason ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      In Season
+    </button>
 
-  <button
-    onclick="window.location.href='<%= makeFilterUrl({ safeOnly: !safeOnly }) %>'"
-    class="<%= safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-alt text-brand-sub' %> text-xs font-semibold px-4 py-2 rounded-full"
-  >
-    Safe Only
-  </button>
-</div>
+    <button
+      onclick="window.location.href='<%= makeFilterUrl({ safeOnly: !safeOnly }) %>'"
+      class="<%= safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+    >
+      Safe Only
+    </button>
+  </div>
 
     <p class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
       <%= plants.length %> PLANTS NEAR YOU
