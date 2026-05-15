@@ -42,7 +42,7 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
   }
 });
 
-const Review = require('../models/Review');
+const Review = require('../models/review');
 
 // get all reviews
 router.get('/reviews', requireAdmin, async (req, res) => {

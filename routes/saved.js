@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-require("../models/Plant");
+require("../models/plant");
 const UserSchema = require("../models/User");
-const Plant = require("../models/Plant");
+const Plant = require("../models/plant");
 
 router.get("/", async (req, res) => {
   try {
