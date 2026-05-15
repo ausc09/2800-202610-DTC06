@@ -1,5 +1,5 @@
-const PlantCategory = require("../models/PlantCategory");
-const PlantSchema = require("../models/Plant");
+const PlantCategory = require("../models/plantCategory");
+const PlantSchema = require("../models/plant");
 
 const MONTHS = [
   "Jan",

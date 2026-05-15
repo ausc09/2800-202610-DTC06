@@ -1,10 +1,22 @@
 const express = require("express");
 const router = express.Router();
 
-const PlantCategory = require("../models/PlantCategory");
+const PlantCategory = require("../models/plantCategory");
 const { formatPlantItem } = require("../helpers/plantHelpers");
-const Plant = require("../models/Plant");
+const Plant = require("../models/plant");
+const Review = require("../models/review");
 const viewHistory = require("../models/viewHistory");
+
+function reviewPhotoSrc(review) {
+  if (!review.photo?.data || !review.photo.contentType) return null;
+
+  const photoData = review.photo.data;
+  const photoBuffer = Buffer.isBuffer(photoData)
+    ? photoData
+    : Buffer.from(photoData.buffer || photoData.data || photoData);
+
+  return `data:${review.photo.contentType};base64,${photoBuffer.toString("base64")}`;
+}
 
 router.get("/plant/:id", async (req, res) => {
   try {
@@ -22,12 +34,24 @@ router.get("/plant/:id", async (req, res) => {
       });
     }
 
-    res.render("plant", { plant, user: req.user || null });
+    const reviewDocs = await Review.find({ plantId: plant._id })
+      .sort({ date: -1 })
+      .lean();
 
+    const reviews = reviewDocs.map((review) => ({
+      ...review,
+      photoSrc: reviewPhotoSrc(review),
+    }));
+
+    res.render("plant", { plant, reviews });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
   }
+});
+
+router.get("/plant/:id/review", (req, res) => {
+  res.redirect(`/reviews/${req.params.id}/new`);
 });
 
 router.get("/plants/:page", async (req, res) => {

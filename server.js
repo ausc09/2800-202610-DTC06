@@ -5,7 +5,8 @@ const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
 const savedRoutes = require("./routes/saved");
-const Review = require("./models/Review");
+const reviewRoutes = require("./routes/reviewRoutes");
+const Review = require("./models/review");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +67,7 @@ async function main() {
   app.use(reviewRoutes);
   app.use("/api", requireLogin, aiTipRoutes);
   app.use("/saved", requireLogin, savedRoutes);
+  app.use("/reviews", requireLogin, reviewRoutes);
 
   app.get("/", (req, res) => {
     res.redirect("/welcome");
