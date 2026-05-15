@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const PlantCategory = require("../models/PlantCategory");
+const Plant = require("../models/Plant");
+const Review = require("../models/review");
 const { formatPlantItem } = require("../helpers/plantHelpers");
 const viewHistory = require("../models/viewHistory");
 
