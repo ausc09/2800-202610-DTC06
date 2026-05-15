@@ -41,12 +41,20 @@ function getSeasonStatus(start, stop) {
 }
 
 function formatDistance(userLocation, plantLocation) {
+  if (!userLocation || plantLocation?.lat == null || plantLocation?.lng == null) {
+    return "N/A";
+  }
+
   const userLat = Number(userLocation?.lat);
   const userLng = Number(userLocation?.lng);
   const plantLat = Number(plantLocation?.lat);
   const plantLng = Number(plantLocation?.lng);
 
-  if ([userLat, userLng, plantLat, plantLng].includes(null)) {
+  if (
+    [userLat, userLng, plantLat, plantLng].some(
+      (value) => !Number.isFinite(value),
+    )
+  ) {
     return "N/A";
   }
 
