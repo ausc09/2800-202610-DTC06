@@ -19,7 +19,7 @@ router.get("/:id/new", async (req, res) => {
   }
 });
 
-router.post("/:plantId", async (req, res) => {
+router.post("/:plantId", upload.single("photo"), async (req, res) => {
   try {
     const plant = await Plant.findById(req.params.plantId);
 
@@ -34,9 +34,18 @@ router.post("/:plantId", async (req, res) => {
       return res.status(400).send("Rating and fruiting status are required");
     }
 
+    let photo = undefined;
+
+    if (req.file) {
+      photo = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      };
+    }
+
     const username = [req.user.firstName, req.user.lastName].join(" ");
 
-    await Review.create({
+    const createdReview = await Review.create({
       plantId: plant._id,
       userId: req.user._id,
       username,
@@ -44,7 +53,17 @@ router.post("/:plantId", async (req, res) => {
       fruitingStatus,
       comment: review?.trim(),
       foodSafetyNotes: safetyNotes?.trim(),
+      photo,
     });
+
+    plant.reviews.push({
+      username: createdReview.username,
+      rating: createdReview.rating,
+      comment: createdReview.comment,
+      date: createdReview.date,
+    });
+
+    await plant.save();
 
     res.redirect(`/plant/${plant.fallingFruitId}`);
   } catch (error) {
