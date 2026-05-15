@@ -3,7 +3,7 @@
 >
   <div
     class="w-14 h-14 rounded-xl bg-[#EEEAE4] flex items-center justify-center shrink-0"
-    id="plant-image-<%= plant.id %>"
+    id="plant-image-<%= plant._id || plant.id %>"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -61,16 +61,20 @@
 </div>
 
 <script>
-  const plant = <%- JSON.stringify(plant) %>;
-  if (plant.imgUrl) {
-    const imgContainer = document.getElementById(
-  "plant-image-<%= plant.id %>",
-  );
-    const img = document.createElement("img");
-    img.src = plant.imgUrl;
-    img.alt = plant.name;
-    img.className = "w-full h-full object-cover rounded-xl";
-    imgContainer.innerHTML = "";
-    imgContainer.appendChild(img);
-  }
+  (() => {
+    const currentPlant = <%- JSON.stringify(plant) %>;
+    if (currentPlant.imgUrl) {
+      const imgContainer = document.getElementById(
+        "plant-image-<%= plant._id || plant.id %>",
+      );
+      if (!imgContainer) return;
+      const img = document.createElement("img");
+      img.src = currentPlant.imgUrl;
+      img.alt = currentPlant.name;
+      img.className = "w-full h-full object-cover rounded-xl";
+
+      imgContainer.innerHTML = "";
+      imgContainer.appendChild(img);
+    }
+  })();
 </script>

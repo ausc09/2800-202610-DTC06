@@ -1,21 +1,24 @@
-<div class="flex items-center gap-2 px-4 py-3">
+<div
+  class="flex items-center gap-2 px-4 py-3"
+  data-search-screen="<%= screen %>"
+>
   <div class="relative flex-1">
     <div class="flex items-center gap-2 bg-brand-alt rounded-2xl px-4 py-3">
       <i class="fa-solid fa-magnifying-glass text-brand-muted text-sm"></i>
       <input
         id="searchInput"
         type="text"
+        value="<%= search || '' %>"
         placeholder="<%= placeholder %>"
         class="bg-transparent outline-none text-sm text-brand-text placeholder:text-brand-muted w-full"
       />
+      <button
+        id="searchButton"
+        class="hidden bg-brand-charcoal text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-brand-greenMid transition shrink-0"
+      >
+        Search
+      </button>
     </div>
-    <div
-      id="suggestions"
-      class="hidden absolute top-full left-0 right-0 bg-brand-surface border border-brand-border rounded-2xl shadow-md mt-1 z-10 overflow-hidden"
-    ></div>
   </div>
-  <button class="bg-brand-alt rounded-2xl p-3">
-    <i class="fa-solid fa-sliders text-brand-muted text-sm"></i>
-  </button>
 </div>
 <script src="/js/searchbar.js"></script>
