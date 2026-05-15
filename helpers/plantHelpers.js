@@ -1,6 +1,6 @@
 const { getDistance } = require("geolib");
-const PlantCategory = require("../models/PlantCategory");
-const PlantSchema = require("../models/Plant");
+const PlantCategory = require("../models/plantCategory");
+const PlantSchema = require("../models/plant");
 const Review = require("../models/review");
 
 const MONTHS = [
