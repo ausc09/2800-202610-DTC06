@@ -74,6 +74,8 @@ async function main() {
   app.get("/welcome", (req, res) => res.render("welcome"));
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
+  app.get("/setup-2fa", requireLogin, (req, res) => res.render("setup-2fa"));
+  app.get("/verify-2fa", requireLogin, (req, res) => res.render("verify-2fa"));
   app.get("/admin", requireLogin, (req, res) => {
   if (req.user.role !== 'admin') return res.redirect('/');
   res.render("admin");
