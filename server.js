@@ -12,7 +12,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
-const reviewRoutes = require("./routes/reviewRoutes");
 const aiTipRoutes = require("./routes/aiTip");
 
 // connect database
