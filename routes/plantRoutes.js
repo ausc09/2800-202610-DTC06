@@ -4,7 +4,11 @@ const router = express.Router();
 const PlantCategory = require("../models/plantCategory");
 const Plant = require("../models/plant");
 const Review = require("../models/review");
-const { formatPlantItem } = require("../helpers/plantHelpers");
+const {
+  formatDistance,
+  formatPlantItem,
+  getSafetyForPlant,
+} = require("../helpers/plantHelpers");
 const viewHistory = require("../models/viewHistory");
 
 function reviewPhotoSrc(review) {
@@ -19,14 +23,14 @@ function reviewPhotoSrc(review) {
 }
 
 function getUserLocation(req) {
-  const source =
-    req.query.lat !== undefined && req.query.lng !== undefined
-      ? req.query
-      : req.session.userLocation;
+  if (req.query.lat !== undefined && req.query.lng !== undefined) {
+    return { lat: Number(req.query.lat), lng: Number(req.query.lng) };
+  }
 
-  const lat = Number(source.lat);
-  const lng = Number(source.lng);
-  return { lat, lng };
+  const userLocation = req.session?.userLocation;
+  if (!userLocation) return null;
+
+  return { lat: userLocation.lat, lng: userLocation.lng };
 }
 
 router.post("/api/user-location", (req, res) => {
@@ -43,7 +47,7 @@ router.get("/plant/information/:id", async (req, res) => {
       `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
     );
     const data = await response.json();
-    const plant = await formatPlantItem(data);
+    const plant = await formatPlantItem(data, getUserLocation(req));
     res.json(plant);
   } catch (error) {
     console.log(error);
@@ -53,6 +57,7 @@ router.get("/plant/information/:id", async (req, res) => {
 
 router.get("/plant/:id", async (req, res) => {
   try {
+    const userLocation = getUserLocation(req);
     const id = req.params.id;
     const plant = await Plant.findOne({ fallingFruitId: id });
     if (!plant) {
@@ -75,8 +80,9 @@ router.get("/plant/:id", async (req, res) => {
       ...review,
       photoSrc: reviewPhotoSrc(review),
     }));
+    const distance = formatDistance(userLocation, plant);
 
-    res.render("plant", { plant, reviews });
+    res.render("plant", { plant, reviews, distance, user: req.user || null });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -89,6 +95,7 @@ router.get("/plant/:id/review", (req, res) => {
 
 router.get("/plants/:page", async (req, res) => {
   try {
+    const userLocation = getUserLocation(req);
     const page = Number(req.params.page) || 1;
     const plantsPerPage = 20;
 
@@ -131,10 +138,16 @@ router.get("/plants/:page", async (req, res) => {
 
     const plants = await Plant.find(query)
       .skip((page - 1) * plantsPerPage)
-      .limit(plantsPerPage);
+      .limit(plantsPerPage)
+      .lean();
+
+    const plantsWithDistance = plants.map((plant) => ({
+      ...plant,
+      distance: formatDistance(userLocation, plant),
+    }));
 
     res.render("plantList", {
-      plants,
+      plants: plantsWithDistance,
       page,
       totalPages,
       search,
@@ -166,16 +179,35 @@ router.get("/api/plants", async (req, res) => {
       name: { $exists: true, $ne: null },
     };
 
-    const plants = await Plant.find(query).select(
-      "fallingFruitId name scientificName lat lng season address safety reviews",
-    );
+    if (!isNaN(north) && !isNaN(south) && !isNaN(east) && !isNaN(west)) {
+      query.lat = { $gte: south, $lte: north };
+      query.lng = { $gte: west, $lte: east };
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { scientificName: { $regex: search, $options: "i" } },
+        { address: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (type !== "all") {
+      query.name = { $regex: type, $options: "i" };
+    }
+
+    const plants = await Plant.find(query)
+      .limit(300)
+      .select(
+        "fallingFruitId name scientificName lat lng season address location safety reviews unverified source distance",
+      );
 
     const result = await Promise.all(
       plants.map(async (p) => ({
         ...p.toObject(),
         id: p.fallingFruitId,
         distance: formatDistance(userLocation, p),
-        safety: await getSafetyForPlant(p._id),
+        safety: await getSafetyForPlant(p.fallingFruitId),
       })),
     );
 

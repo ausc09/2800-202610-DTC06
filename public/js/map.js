@@ -7,6 +7,7 @@ document.getElementById("greeting-sub").textContent = greetingSub;
 let activeMapFilter = "all";
 let plantMarkers = [];
 let loadTimeout = null;
+let currentUserLocation = null;
 
 // Filter chips
 function updateFilterChipStyles() {
@@ -49,6 +50,11 @@ function getMapQueryParams() {
     params.set("safeOnly", "true");
   }
 
+  if (currentUserLocation) {
+    params.set("lat", currentUserLocation.lat);
+    params.set("lng", currentUserLocation.lng);
+  }
+
   return params.toString();
 }
 
@@ -65,8 +71,11 @@ const map = L.map("map").setView([49.2827, -123.1207], 13);
 
 let userMarker = null;
 
-getUserLocation().then((coords) => {
+const userLocationReady = getUserLocation().then(async (coords) => {
   if (coords) {
+    currentUserLocation = coords;
+    await saveUserLocation(coords);
+
     map.setView([coords.lat, coords.lng], 15);
 
     userMarker = L.circleMarker([coords.lat, coords.lng], {
@@ -198,6 +207,9 @@ async function loadPlants() {
       marker.on("click", () => {
         const season = plant.season || "";
         const dist = plant.distance ? parseFloat(plant.distance) : null;
+        const detailParams = currentUserLocation
+          ? `?lat=${encodeURIComponent(currentUserLocation.lat)}&lng=${encodeURIComponent(currentUserLocation.lng)}`
+          : "";
 
         marker
           .bindPopup(
@@ -239,7 +251,7 @@ async function loadPlants() {
                     : ""
                 }
               </div>
-              <a href="/plant/${plant.fallingFruitId}"
+              <a href="/plant/${plant.fallingFruitId}${detailParams}"
                  style="display:block;background:#2a2620;color:#fff;text-align:center;
                         padding:9px;border-radius:10px;font-size:13px;
                         text-decoration:none;font-weight:500">
@@ -268,7 +280,7 @@ function debounceLoadPlants() {
 }
 
 updateFilterChipStyles();
-loadPlants();
+userLocationReady.then(loadPlants);
 
 map.on("moveend", debounceLoadPlants);
 map.on("zoomend", debounceLoadPlants);
