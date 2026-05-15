@@ -41,8 +41,12 @@ function getMapQueryParams() {
     params.set("search", search);
   }
 
-  if (activeMapFilter !== "all") {
-    params.set("type", activeMapFilter);
+  if (activeMapFilter === "verified") {
+    params.set("verified", "true");
+  } else if (activeMapFilter === "inSeason") {
+    params.set("inSeason", "true");
+  } else if (activeMapFilter === "safeOnly") {
+    params.set("safeOnly", "true");
   }
 
   return params.toString();
