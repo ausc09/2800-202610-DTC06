@@ -1,5 +1,7 @@
+const { getDistance } = require("geolib");
 const PlantCategory = require("../models/PlantCategory");
 const PlantSchema = require("../models/Plant");
+const Review = require("../models/review");
 
 const MONTHS = [
   "Jan",
@@ -15,6 +17,9 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
+
+const MIN_VERIFIED_REVIEWS = 3;
+const VERIFIED_AVERAGE_RATING = 4;
 
 function toMonthName(val) {
   const n = parseInt(val, 10);
@@ -35,18 +40,73 @@ function getSeasonStatus(start, stop) {
   return isInSeason;
 }
 
-async function formatPlantItem(item) {
+function formatDistance(userLocation, plantLocation) {
+  const userLat = Number(userLocation?.lat);
+  const userLng = Number(userLocation?.lng);
+  const plantLat = Number(plantLocation?.lat);
+  const plantLng = Number(plantLocation?.lng);
+
+  if ([userLat, userLng, plantLat, plantLng].includes(null)) {
+    return "N/A";
+  }
+
+  const distanceMeters = getDistance(
+    { latitude: userLat, longitude: userLng },
+    { latitude: plantLat, longitude: plantLng },
+  );
+
+  return (distanceMeters / 1000).toFixed(1);
+}
+
+async function getReviewStats(plantId) {
+  if (!plantId) {
+    return { reviewCount: 0, averageRating: 0 };
+  }
+
+  const [stats] = await Review.aggregate([
+    { $match: { plantId } },
+    {
+      $group: {
+        _id: "$plantId",
+        reviewCount: { $sum: 1 },
+        averageRating: { $avg: "$rating" },
+      },
+    },
+  ]);
+
+  return stats || { reviewCount: 0, averageRating: 0 };
+}
+
+function getSafetyFromReviewStats(reviewStats) {
+  if (
+    reviewStats.reviewCount >= MIN_VERIFIED_REVIEWS &&
+    reviewStats.averageRating >= VERIFIED_AVERAGE_RATING
+  ) {
+    return { status: "verified", label: "Verified" };
+  }
+
+  return { status: "unverified", label: "Unverified" };
+}
+
+async function getSafetyForPlant(plantId) {
+  const reviewStats = await getReviewStats(plantId);
+  return getSafetyFromReviewStats(reviewStats);
+}
+
+async function formatPlantItem(item, userLocation = null) {
   const typeId = item.type_ids?.[0];
   const category = await PlantCategory.findOne({ fallingFruitTypeId: typeId });
   const plantDoc = await PlantSchema.findOne({ fallingFruitId: item.id });
+  const lat = plantDoc?.lat ?? item.lat;
+  const lng = plantDoc?.lng ?? item.lng;
   const start = plantDoc?.season_start;
   const stop = plantDoc?.season_stop;
   const startName = start ? toMonthName(start) : null;
   const stopName = stop ? toMonthName(stop) : null;
   const seasonStatus = getSeasonStatus(start, stop);
   const reviews = plantDoc?.reviews || [];
-  const reviewCount = reviews.length;
   const latestReview = reviews[reviews.length - 1] || null;
+  const safety = await getSafetyForPlant(plantDoc?._id);
 
   return {
     id: item.id,
@@ -58,8 +118,8 @@ async function formatPlantItem(item) {
     author: item.author || "Not Available",
     description: item.description || "No description available.",
     unverified: plantDoc?.unverified ?? item.unverified ?? false,
-    lat: plantDoc?.lat || item.lat,
-    lng: plantDoc?.lng || item.lng,
+    lat,
+    lng,
     lastObserved: item.updated_at
       ? new Date(item.updated_at).toDateString()
       : "Not Available",
@@ -70,14 +130,8 @@ async function formatPlantItem(item) {
     seasonStatus: seasonStatus ? "in" : "out",
     fruitingStatus: latestReview?.fruitingStatus || "Not Available",
     imgUrl: null,
-    distance: "N/A",
-    safety: {
-      //Temporary waiting for review feature finish
-      // status: "verified",
-      // label: "Verified",
-      status: reviewCount < 0 ? "verified" : "unverified",
-      label: reviewCount < 0 ? "Verified" : "Unverified",
-    },
+    distance: formatDistance(userLocation, { lat, lng }),
+    safety,
     source: "Falling Fruit",
   };
 }
@@ -102,4 +156,9 @@ async function getOrCreatePlant(plantId) {
   return plant;
 }
 
-module.exports = { formatPlantItem, getOrCreatePlant };
+module.exports = {
+  formatPlantItem,
+  formatDistance,
+  getSafetyForPlant,
+  getOrCreatePlant,
+};

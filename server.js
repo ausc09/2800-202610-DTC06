@@ -5,11 +5,15 @@ const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
 const savedRoutes = require("./routes/saved");
+const reviewRoutes = require("./routes/reviewRoutes");
+const Review = require("./models/review");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
+const reviewRoutes = require("./routes/reviewRoutes");
+const aiTipRoutes = require("./routes/aiTip");
 
 // connect database
 function connectDB() {
@@ -32,7 +36,7 @@ async function main() {
   app.set("view engine", "ejs");
   app.use(express.static("public"));
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: "10mb" }));
 
   // CSP
   app.use((req, res, next) => {
@@ -60,7 +64,10 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
+  app.use(reviewRoutes);
+  app.use("/api", requireLogin, aiTipRoutes);
   app.use("/saved", requireLogin, savedRoutes);
+  app.use("/reviews", requireLogin, reviewRoutes);
 
   app.get("/", (req, res) => {
     res.redirect("/welcome");
@@ -73,12 +80,47 @@ async function main() {
   app.get("/welcome", (req, res) => res.render("welcome"));
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
+  app.get("/setup-2fa", requireLogin, (req, res) => res.render("setup-2fa"));
+  app.get("/verify-2fa", requireLogin, (req, res) => res.render("verify-2fa"));
+  app.get("/admin", requireLogin, (req, res) => {
+    if (req.user.role !== "admin") return res.redirect("/");
+    res.render("admin");
+  });
 
-  app.get("/profile", requireLogin, (req, res) => {
-    res.render("profile", { user: req.user });
+  app.get("/profile", requireLogin, async (req, res) => {
+    try {
+      const User = require("./models/User");
+      const ViewHistory = require("./models/viewHistory");
+
+      const freshUser = await User.findById(req.user._id).lean();
+      const reviewCount = await Review.countDocuments({ userId: req.user._id });
+      const plantsSaved = freshUser.favoritePlants?.length || 0;
+
+      // recent 3 view history
+      const activities = await ViewHistory.find({ userId: req.user._id })
+        .sort({ viewedAt: -1 })
+        .limit(3)
+        .lean();
+
+      res.render("profile", {
+        user: freshUser,
+        reviewCount,
+        plantsSaved,
+        activities,
+      });
+    } catch (err) {
+      console.error(err);
+      res.render("profile", {
+        user: req.user,
+        reviewCount: 0,
+        plantsSaved: 0,
+        activities: [],
+      });
+    }
   });
 
   app.use("/auth", authRoutes);
+  app.use("/admin", require("./routes/admin"));
 
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

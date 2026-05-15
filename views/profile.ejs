@@ -93,12 +93,41 @@
         </div>
       </div>
 
+      <!-- 2FA Toggle -->
+      <div
+        class="flex w-full px-4 py-4 mb-4 bg-brand-surface border border-brand-border rounded-2xl items-center justify-between"
+      >
+        <div class="flex flex-1 items-center gap-3">
+          <i
+            data-lucide="shield-check"
+            class="flex-shrink-0 w-5 h-5 text-brand-green"
+          ></i>
+          <div>
+            <p class="text-sm font-medium">Two-Factor Authentication</p>
+            <p class="text-xs text-brand-muted">
+              Extra security for your account
+            </p>
+          </div>
+        </div>
+        <div
+          onclick="toggle2FA()"
+          id="toggle-track"
+          class="flex-shrink-0"
+          style="width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s;background:<%= user.twoFactorEnabled ? '#2d6a4f' : '#e0dbd2' %>"
+        >
+          <div
+            id="toggle-thumb"
+            style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:2px;transition:left 0.2s;left:<%= user.twoFactorEnabled ? '22px' : '2px' %>"
+          ></div>
+        </div>
+      </div>
+
       <!-- Stats -->
-      <div class="grid grid-cols-3 mb-8 gap-3">
+      <div class="grid grid-cols-2 mb-8 gap-3">
         <div
           class="p-4 text-center bg-brand-surface border border-brand-border rounded-2xl"
         >
-          <p class="font-display font-bold text-2xl">0</p>
+          <p class="font-display font-bold text-2xl"><%= plantsSaved %></p>
           <p class="mt-1 text-xs text-brand-muted tracking-widest">
             PLANTS SAVED
           </p>
@@ -106,81 +135,62 @@
         <div
           class="p-4 text-center bg-brand-surface border border-brand-border rounded-2xl"
         >
-          <p class="font-display font-bold text-2xl">0</p>
+          <p class="font-display font-bold text-2xl"><%= reviewCount %></p>
           <p class="mt-1 text-xs text-brand-muted tracking-widest">REVIEWS</p>
         </div>
-        <div
-          class="p-4 text-center bg-brand-surface border border-brand-border rounded-2xl"
-        >
-          <p class="font-display font-bold text-2xl">0</p>
-          <p class="mt-1 text-xs text-brand-muted tracking-widest">PHOTOS</p>
-        </div>
       </div>
-
-      <!-- Recent Activity -->
       <div class="mb-6">
         <h3 class="mb-3 font-display font-semibold text-base">
-          Recent Activity
+          Recently Viewed (Last 3)
         </h3>
         <div
           class="overflow-hidden bg-brand-surface border border-brand-border rounded-2xl"
         >
-          <!-- Activity item 1 -->
-          <div
-            class="flex px-4 py-4 border-b border-brand-border items-center gap-3"
+          <% if (activities.length === 0) { %>
+          <div class="px-4 py-6 text-center text-sm text-brand-muted">
+            No activity yet
+          </div>
+          <% } else { %> <% activities.forEach(function(activity, index) { %>
+          <a
+            href="/plant/<%= activity.fallingFruitId %>"
+            class="flex px-4 py-4 <%= index < activities.length - 1 ? ' border-b border-brand-border' : '' %> items-center gap-3"
           >
             <div
               class="flex flex-shrink-0 w-10 h-10 bg-brand-greenPale rounded-xl items-center justify-center"
             >
-              <i data-lucide="star" class="w-5 h-5 text-brand-green"></i>
+              <i data-lucide="eye" class="w-5 h-5 text-brand-green"></i>
             </div>
             <div class="flex-1">
               <p class="text-sm">
-                Reviewed
-                <span class="text-brand-green font-medium">XXX</span>
+                Viewed
+                <span class="text-brand-green font-medium"
+                  ><%= activity.plantName %></span
+                >
               </p>
-              <p class="mt-0.5 text-xs text-brand-muted">X days ago</p>
+              <p class="mt-0.5 text-xs text-brand-muted">
+                <% const diff = Date.now() - new
+                Date(activity.viewedAt).getTime(); const days = Math.floor(diff
+                / (1000 * 60 * 60 * 24)); if (days === 0) { %> Today <% } else
+                if (days === 1) { %> Yesterday <% } else if (days < 7) { %> <%=
+                days %> days ago <% } else { %> <%= Math.floor(days / 7) %>
+                week<%= Math.floor(days / 7) > 1 ? 's' : '' %> ago <% } %>
+              </p>
             </div>
             <i data-lucide="chevron-right" class="w-4 h-4 text-brand-muted"></i>
-          </div>
-
-          <!-- Activity item 2 -->
-          <div
-            class="flex px-4 py-4 border-b border-brand-border items-center gap-3"
-          >
-            <div
-              class="flex flex-shrink-0 w-10 h-10 bg-brand-greenPale rounded-xl items-center justify-center"
-            >
-              <i data-lucide="bookmark" class="w-5 h-5 text-brand-green"></i>
-            </div>
-            <div class="flex-1">
-              <p class="text-sm">
-                Saved
-                <span class="text-brand-green font-medium">XXX</span>
-              </p>
-              <p class="mt-0.5 text-xs text-brand-muted">X days ago</p>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-brand-muted"></i>
-          </div>
-
-          <!-- Activity item 3 -->
-          <div class="flex px-4 py-4 items-center gap-3">
-            <div
-              class="flex flex-shrink-0 w-10 h-10 bg-brand-greenPale rounded-xl items-center justify-center"
-            >
-              <i data-lucide="star" class="w-5 h-5 text-brand-green"></i>
-            </div>
-            <div class="flex-1">
-              <p class="text-sm">
-                Reviewed
-                <span class="text-brand-green font-medium">XXX</span>
-              </p>
-              <p class="mt-0.5 text-xs text-brand-muted">X week ago</p>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-brand-muted"></i>
-          </div>
+          </a>
+          <% }) %> <% } %>
         </div>
       </div>
+
+      <% if (user.role === 'admin') { %>
+      <a
+        href="/admin"
+        class="flex w-full py-4 mb-3 text-brand-green font-medium text-sm border border-brand-green rounded-xl items-center justify-center gap-2 hover:bg-brand-greenPale transition"
+      >
+        <i data-lucide="shield" class="w-4 h-4"></i>
+        Admin Dashboard
+      </a>
+      <% } %>
 
       <!-- Logout -->
       <button
