@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const page = tab.dataset.page;
     if (
       path.startsWith("/" + page) ||
-      (page === "plants" && path.startsWith("/plant"))  // ← 加呢行
+      (page === "plants" && path.startsWith("/plant"))
     ) {
       tab.classList.add("active");
     }
