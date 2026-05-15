@@ -11,6 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
+const reviewRoutes = require("./routes/reviewRoutes");
 
 // connect database
 function connectDB() {
@@ -61,6 +62,7 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
+  app.use(reviewRoutes);
   app.use("/saved", requireLogin, savedRoutes);
 
   app.get("/", (req, res) => {
