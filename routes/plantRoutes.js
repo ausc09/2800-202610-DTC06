@@ -14,6 +14,14 @@ router.get("/plant/:id", async (req, res) => {
       return res.status(404).send("Plant not found");
     }
 
+    if (req.user) {
+      await viewHistory.create({
+        userId: req.user._id,
+        fallingFruitId: Number(id),
+        plantName: plant.name || "Unknown plant",
+      });
+    }
+
     res.render("plant", { plant });
   } catch (error) {
     console.log(error);
