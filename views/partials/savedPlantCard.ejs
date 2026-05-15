@@ -43,9 +43,9 @@
         class="text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1
           <%= safety.status === 'verified' ? 'bg-brand-greenPale text-brand-green' : 'bg-brand-alt text-brand-sub' %>"
       >
-        <% if (safety.status === 'verified') { %>✓<% } %>
-        <% if (safety.status === 'unverified') { %>⚠<% } %>
-        <%= safety.label %>
+        <% if (plant.safety.status === 'verified') { %>✓<% } %>
+        <% if (plant.safety.status === 'unverified') { %>⚠<% } %>
+        <%= plant.safety.label %>
       </span>
 
       <span
@@ -87,7 +87,7 @@
         return;
       }
 
-      window.location.href = `/plant/${plant.id}`;
+      window.location.href = `/plant/${plant._id}`;
     });
 
     if (plant.imgUrl) {

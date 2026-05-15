@@ -36,6 +36,8 @@ router.post("/login", (req, res, next) => {
 
     req.login(user, (err) => {
       if (err) return next(err);
+      console.log('twoFactorEnabled:', user.twoFactorEnabled);
+      console.log('user:', user);
 
       // Remember me
       if (req.body.rememberMe) {
@@ -97,8 +99,77 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
+    if (req.user.twoFactorEnabled) {
+      req.session.twoFactorPassed = false;
+      return res.redirect('/verify-2fa');
+    }
+    req.session.twoFactorPassed = true;
     res.redirect("/");
   },
 );
+
+router.get('/2fa/setup', async (req, res) => {
+  const secret = speakeasy.generateSecret({ name: `PlantSafe (${req.user.email})` });
+  req.session.tempSecret = secret.base32;
+  const qrDataURL = await QRCode.toDataURL(secret.otpauth_url);
+  res.json({ qr: qrDataURL, secret: secret.base32 });
+});
+
+router.post('/2fa/enable', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+  try {
+    const { token } = req.body;
+    const verified = speakeasy.totp.verify({
+      secret: req.session.tempSecret,
+      encoding: 'base32',
+      token,
+      window: 1,
+    });
+    if (!verified) return res.status(400).json({ error: 'Invalid code. Try again.' });
+
+    await User.findByIdAndUpdate(req.user._id, {
+      twoFactorSecret: req.session.tempSecret,
+      twoFactorEnabled: true,
+    });
+    delete req.session.tempSecret;
+    req.session.twoFactorPassed = true;
+    res.json({ message: '2FA enabled successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2FA verify
+router.post('/2fa/verify', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+  try {
+    const { token } = req.body;
+    const verified = speakeasy.totp.verify({
+      secret: req.user.twoFactorSecret,
+      encoding: 'base32',
+      token,
+      window: 1,
+    });
+    if (!verified) return res.status(400).json({ error: 'Invalid code' });
+    req.session.twoFactorPassed = true;
+    res.json({ message: '2FA verified' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2FA disable
+router.post('/2fa/disable', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+  try {
+    await User.findByIdAndUpdate(req.user._id, {
+      twoFactorEnabled: false,
+      twoFactorSecret: null,
+    });
+    res.json({ message: '2FA disabled' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

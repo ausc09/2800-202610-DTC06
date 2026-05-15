@@ -12,7 +12,10 @@ const reviewSchema = new mongoose.Schema({
   fruitingStatus: { type: String, required: true },
   comment: { type: String, maxlength: 500 },
   foodSafetyNotes: String,
-  photoUrl: String,
+  photo: {
+    data: Buffer,
+    contentType: String,
+  },
   date: { type: Date, default: Date.now },
 });
 
