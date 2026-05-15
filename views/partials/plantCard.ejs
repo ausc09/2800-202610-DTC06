@@ -52,12 +52,16 @@
     </div>
   </div>
 
-  <div
-    class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
-  >
-    <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
-    <span><%= plant.source %></span>
-  </div>
+  <% if (locals.hideSource && locals.showSave) { %>
+    <%- include("./saveButton", { plant, buttonClass: "bg-transparent hover:bg-transparent" }) %>
+  <% } else if (!locals.hideSource) { %>
+    <div
+      class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
+    >
+      <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
+      <span><%= plant.source %></span>
+    </div>
+  <% } %>
 </div>
 
 <script>
