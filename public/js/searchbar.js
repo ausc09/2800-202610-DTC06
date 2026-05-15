@@ -89,8 +89,10 @@ function setupSavedSearch(searchInput) {
 
       button.classList.toggle("bg-brand-charcoal", isActive);
       button.classList.toggle("text-white", isActive);
-      button.classList.toggle("bg-brand-alt", !isActive);
+      button.classList.toggle("bg-brand-surface", !isActive);
       button.classList.toggle("text-brand-sub", !isActive);
+      button.classList.toggle("border", !isActive);
+      button.classList.toggle("border-brand-border", !isActive);
     });
   }
 
@@ -110,7 +112,7 @@ function setupSavedSearch(searchInput) {
 
       let matchesFilter = true;
 
-      if (activeFilters.has("safe")) {
+      if (activeFilters.has("safeOnly")) {
         matchesFilter = matchesFilter && plant.dataset.safety === "safe";
       }
 

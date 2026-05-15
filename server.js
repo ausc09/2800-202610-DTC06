@@ -12,6 +12,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
+const reviewRoutes = require("./routes/reviewRoutes");
+const aiTipRoutes = require("./routes/aiTip");
 
 // connect database
 function connectDB() {
@@ -34,7 +36,7 @@ async function main() {
   app.set("view engine", "ejs");
   app.use(express.static("public"));
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: "10mb" }));
 
   // CSP
   app.use((req, res, next) => {
@@ -62,6 +64,8 @@ async function main() {
 
   // Routes
   app.use(plantRoutes);
+  app.use(reviewRoutes);
+  app.use("/api", requireLogin, aiTipRoutes);
   app.use("/saved", requireLogin, savedRoutes);
   app.use("/reviews", requireLogin, reviewRoutes);
 
@@ -76,6 +80,8 @@ async function main() {
   app.get("/welcome", (req, res) => res.render("welcome"));
   app.get("/login", (req, res) => res.render("login"));
   app.get("/signup", (req, res) => res.render("signup"));
+  app.get("/setup-2fa", requireLogin, (req, res) => res.render("setup-2fa"));
+  app.get("/verify-2fa", requireLogin, (req, res) => res.render("verify-2fa"));
   app.get("/admin", requireLogin, (req, res) => {
     if (req.user.role !== "admin") return res.redirect("/");
     res.render("admin");

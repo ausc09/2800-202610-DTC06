@@ -41,37 +41,37 @@
         <div class="flex gap-2 overflow-x-auto">
           <button
             data-saved-filter="all"
-            class="saved-filter-btn bg-brand-charcoal text-white text-xs font-semibold px-4 py-2 rounded-full"
+            class="saved-filter-btn bg-brand-charcoal text-white text-xs font-medium px-4 py-1.5 rounded-full"
           >
             All
           </button>
 
           <button
-            data-saved-filter="safe"
-            class="saved-filter-btn bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full"
+            data-saved-filter="verified"
+            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
           >
-            Safe
+            Verified
           </button>
 
           <button
             data-saved-filter="in-season"
-            class="saved-filter-btn bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full"
+            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
           >
             In Season
           </button>
 
           <button
-            data-saved-filter="verified"
-            class="saved-filter-btn bg-brand-alt text-brand-sub text-xs font-semibold px-4 py-2 rounded-full"
+            data-saved-filter="safeOnly"
+            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
           >
-            Verified
+            Safe Only
           </button>
         </div>
 
         <div id="savedPlantsContainer" class="flex flex-col gap-4">
           <% savedPlants.forEach((plant) => { %>
             <div
-              class="plant-item"
+              class="plant-item relative"
               data-name="<%= plant.name || '' %>"
               data-scientific="<%= plant.scientificName || '' %>"
               data-location="<%= plant.location || plant.address || '' %>"
@@ -79,7 +79,9 @@
               data-verified="<%= plant.unverified === false ? 'true' : 'false' %>"
               data-in-season="<%= plant.season && plant.season !== 'Unknown' ? 'true' : 'false' %>"
             >
-              <%- include("partials/savedPlantCard", { plant: plant }) %>
+              <a href="/plant/<%= plant.fallingFruitId %>" class="block">
+                <%- include("partials/plantCard", { plant: plant, hideSource: true, showSave: true }) %>
+              </a>
             </div>
           <% }) %>
         </div>
