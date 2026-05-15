@@ -1,6 +1,7 @@
 // DOM references for the add review page
 const ratingHelpBtn = document.getElementById("rating-help-btn");
 
+//
 
 const ratingInput = document.getElementById("rating-input");
 const reviewText = document.getElementById("review-text");
