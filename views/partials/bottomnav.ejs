@@ -113,17 +113,17 @@
 <div class="h-16 pb-[env(safe-area-inset-bottom)]"></div>
 
 <script>
-// Auto-highlight the current page tab based on URL path
-document.addEventListener("DOMContentLoaded", () => {
-  const path = window.location.pathname;
-  document.querySelectorAll(".nav-tab").forEach(tab => {
-    const page = tab.dataset.page;
-    if (
-      path.startsWith("/" + page) ||
-      (page === "plants" && path.startsWith("/plant"))
-    ) {
-      tab.classList.add("active");
-    }
+  // Auto-highlight the current page tab based on URL path
+  document.addEventListener("DOMContentLoaded", () => {
+    const path = window.location.pathname;
+    document.querySelectorAll(".nav-tab").forEach((tab) => {
+      const page = tab.dataset.page;
+      if (
+        path.startsWith("/" + page) ||
+        (page === "plants" && path.startsWith("/plant"))
+      ) {
+        tab.classList.add("active");
+      }
+    });
   });
-});
 </script>

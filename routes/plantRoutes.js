@@ -4,12 +4,12 @@ const router = express.Router();
 const PlantCategory = require("../models/PlantCategory");
 const { formatPlantItem } = require("../helpers/plantHelpers");
 const Plant = require("../models/Plant");
+const viewHistory = require("../models/viewHistory");
 
 router.get("/plant/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const plant = await Plant.findById(id);
-
+    const plant = await Plant.findOne({ fallingFruitId: id });
     if (!plant) {
       return res.status(404).send("Plant not found");
     }
