@@ -82,24 +82,4 @@ async function formatPlantItem(item) {
   };
 }
 
-async function getOrCreatePlant(plantId) {
-  let plant = await PlantSchema.findOne({ fallingFruitId: plantId });
-  if (!plant) {
-    const response = await fetch(
-      `http://localhost:3000/plant/information/${plantId}`,
-    );
-    if (!response.ok) {
-      throw new Error("Could not fetch plant information");
-    }
-
-    const plantInfo = await response.json();
-    plant = new PlantSchema({
-      ...plantInfo,
-      fallingFruitId: plantId,
-    });
-    await plant.save();
-  }
-  return plant;
-}
-
-module.exports = { formatPlantItem, getOrCreatePlant };
+module.exports = { formatPlantItem };

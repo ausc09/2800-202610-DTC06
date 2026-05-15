@@ -2,23 +2,9 @@ const express = require("express");
 const router = express.Router();
 require("../models/Plant");
 const UserSchema = require("../models/User");
-const {
-  getOrCreatePlant,
-  formatPlantItem,
-} = require("../helpers/plantHelpers");
+const Plant = require("../models/Plant");
 
-function requireLogin(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-
-  return res.status(401).json({
-    message: "You must be logged in",
-    redirectTo: "/login",
-  });
-}
-
-router.get("/", requireLogin, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const user = await UserSchema.findById(req.user._id).populate(
       "favoritePlants",
@@ -32,15 +18,7 @@ router.get("/", requireLogin, async (req, res) => {
 
     const savedPlants = await Promise.all(
       user.favoritePlants.map(async (plant) => {
-        const response = await fetch(
-          `http://localhost:3000/plant/information/${plant.fallingFruitId}`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Could not fetch plant information");
-        }
-
-        return await response.json();
+        return await Plant.findById(plant);
       }),
     );
 
@@ -51,7 +29,7 @@ router.get("/", requireLogin, async (req, res) => {
   }
 });
 
-router.post("/", requireLogin, async (req, res) => {
+router.post("/", async (req, res) => {
   const userId = req.user._id;
   const { plantId } = req.body;
 
@@ -62,7 +40,7 @@ router.post("/", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const plant = await getOrCreatePlant(plantId);
+    const plant = await Plant.findById(plantId);
 
     const alreadySaved = user.favoritePlants.some(
       (id) => id.toString() === plant._id.toString(),
@@ -81,7 +59,7 @@ router.post("/", requireLogin, async (req, res) => {
   }
 });
 
-router.delete("/", requireLogin, async (req, res) => {
+router.delete("/", async (req, res) => {
   const userId = req.user._id;
   const { plantId } = req.body;
 
@@ -92,7 +70,7 @@ router.delete("/", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const plant = await getOrCreatePlant(plantId);
+    const plant = await Plant.findById(plantId);
 
     user.favoritePlants = user.favoritePlants.filter(
       (id) => id.toString() !== plant._id.toString(),
@@ -106,7 +84,7 @@ router.delete("/", requireLogin, async (req, res) => {
   }
 });
 
-router.get("/isFavorite", requireLogin, async (req, res) => {
+router.get("/isFavorite", async (req, res) => {
   const userId = req.user._id;
   const { plantId } = req.query;
 
@@ -117,10 +95,8 @@ router.get("/isFavorite", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const plant = await getOrCreatePlant(plantId);
-
     const isFavorite = user.favoritePlants.some(
-      (id) => id.toString() === plant._id.toString(),
+      (id) => id.toString() === plantId.toString(),
     );
 
     res.status(200).json({ isFavorite });
