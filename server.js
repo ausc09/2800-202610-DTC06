@@ -62,10 +62,10 @@ async function main() {
   app.use(passport.session());
 
   // Routes
+  app.use("/saved", savedRoutes);
   app.use(plantRoutes);
   app.use(reviewRoutes);
   app.use("/api", requireLogin, aiTipRoutes);
-  app.use("/saved", requireLogin, savedRoutes);
   app.use("/reviews", requireLogin, reviewRoutes);
 
   app.get("/", (req, res) => {
