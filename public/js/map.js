@@ -198,7 +198,7 @@ async function loadPlants() {
                     : ""
                 }
               </div>
-              <a href="/plant/${plant._id}"
+              <a href="/plant/${plant.fallingFruitId}"
                  style="display:block;background:#2a2620;color:#fff;text-align:center;
                         padding:9px;border-radius:10px;font-size:13px;
                         text-decoration:none;font-weight:500">
