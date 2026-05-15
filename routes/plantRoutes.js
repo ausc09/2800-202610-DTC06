@@ -55,7 +55,7 @@ router.get("/plants", async (req, res) => {
     const data = await response.json();
     const plants = await Promise.all(data.map(formatPlantItem));
     res.render("plantList", { plants });
-    console.log(plants);
+    // console.log(plants);
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");

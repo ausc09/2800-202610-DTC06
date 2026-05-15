@@ -170,13 +170,20 @@
           <div class="flex justify-between items-center mb-3">
             <h2 class="font-semibold text-base">Community Reviews</h2>
             <div class="relative">
-              <sspan id="add-yours-btn" class="text-brand-green text-sm font-semibold cursor-pointer">
+              <button id="add-yours-btn" type="button"
+                      data-add-review-href="/review/add/<%= plant.id %>"
+                      data-plant-id="<%= plant.id %>"
+                      class="text-brand-green text-sm font-semibold cursor-pointer bg-transparent p-0">
                 Add yours
-              </span>
+              </button>
             </div>
           </div>
           <div class="bg-brand-surface border border-brand-border rounded-2xl shadow-md p-4">
-            <p class="text-brand-muted text-sm">No reviews yet.</p>
+
+            <!-- reviews display here -->
+            <p class="no-reviews-message text-brand-muted text-sm">Loading reviews...</p>
+            <div id="reviews"></div>
+
           </div>
         </div>
       </div>
