@@ -75,7 +75,7 @@
 
     <div class="px-4 flex flex-col gap-3">
       <% plants.forEach(plant=> { %>
-        <a href="/plant/<%= plant._id %>" class="block">
+        <a href="/plant/<%= plant.fallingFruitId %>" class="block">
           <%- include("partials/plantcard", { plant }) %>
         </a>
         <% }) %>
