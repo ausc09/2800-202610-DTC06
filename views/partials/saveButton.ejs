@@ -163,6 +163,11 @@
       document.getElementById(`unsave-modal-${id}`)?.classList.add("hidden");
     };
 
+    const saveModal = document.getElementById(`save-modal-${plantId}`);
+    const unsaveModal = document.getElementById(`unsave-modal-${plantId}`);
+    if (saveModal) document.body.appendChild(saveModal);
+    if (unsaveModal) document.body.appendChild(unsaveModal);
+
     checkFavorite();
   })();
 </script>

@@ -30,11 +30,11 @@
       <span
         class="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
         <%= plant.safety.status === 'verified' ? 'bg-brand-greenPale text-brand-green' : 'bg-brand-alt text-brand-sub' %>"
-        >
+      >
         <% if (plant.safety.status === 'verified') { %>✓<% } %>
         <% if (plant.safety.status === 'unverified') { %>⚠<% } %>
         <%= plant.safety.label %>
-        </span>
+      </span>
     </div>
 
     <p class="font-body text-xs italic text-brand-muted mt-1 truncate">
@@ -52,16 +52,12 @@
     </div>
   </div>
 
-  <% if (locals.hideSource && locals.showSave) { %>
-    <%- include("./saveButton", { plant, buttonClass: "bg-transparent hover:bg-transparent" }) %>
-  <% } else if (!locals.hideSource) { %>
-    <div
-      class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
-    >
-      <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
-      <span><%= plant.source %></span>
-    </div>
-  <% } %>
+  <div
+    class="font-body flex flex-col items-center justify-center text-brand-muted text-[10px] shrink-0"
+  >
+    <span class="w-2 h-2 rounded-full bg-brand-green mb-1"></span>
+    <span><%= plant.source %></span>
+  </div>
 </div>
 
 <script>
