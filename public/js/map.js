@@ -57,11 +57,13 @@ function getMapQueryParams() {
 }
 
 function showMapLoader() {
-  document.getElementById("mapLoader")?.classList.remove("hidden");
+  const loader = document.getElementById("mapLoader");
+  if (loader) loader.style.display = "flex";
 }
 
 function hideMapLoader() {
-  document.getElementById("mapLoader")?.classList.add("hidden");
+  const loader = document.getElementById("mapLoader");
+  if (loader) loader.style.display = "none";
 }
 
 // Initialize map centered on Vancouver
