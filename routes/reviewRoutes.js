@@ -5,6 +5,7 @@ const multer = require("multer");
 const Plant = require("../models/plant");
 const Review = require("../models/review");
 const { validatePlantImage } = require("../helpers/visionHelpers");
+const { updatePlantSafety } = require("../helpers/plantHelpers");
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -96,14 +97,7 @@ router.post("/:plantId", upload.single("photo"), async (req, res) => {
       photo,
     });
 
-    plant.reviews.push({
-      username: createdReview.username,
-      rating: createdReview.rating,
-      comment: createdReview.comment,
-      date: createdReview.date,
-    });
-
-    await plant.save();
+    await updatePlantSafety(plant._id);
 
     res.redirect(`/plant/${plant.fallingFruitId}`);
   } catch (error) {
