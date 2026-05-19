@@ -201,6 +201,41 @@
       </button>
     </div>
 
+    <!-- Disable 2FA Modal -->
+    <div id="disable-2fa-modal" class="z-[999] hidden fixed inset-0">
+      <div
+        class="bg-black/40 fixed inset-0"
+        onclick="closeDisable2FAModal()"
+      ></div>
+      <div
+        class="z-[1000] p-6 bg-white rounded-t-3xl transition-transform fixed bottom-0 left-0 right-0 transform duration-300"
+      >
+        <div class="w-10 h-1 mx-auto mb-4 bg-gray-300 rounded-full"></div>
+        <div class="flex mb-3 items-center gap-3">
+          <i class="text-brand-muted text-xl fa-solid fa-shield-halved"></i>
+          <div>
+            <p class="font-semibold text-base">Disable 2FA?</p>
+            <p class="text-sm text-brand-muted">
+              Your account will be less secure without two-factor
+              authentication.
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="confirmDisable2FA()"
+          class="w-full py-3 mb-2 text-white font-semibold bg-red-500 rounded-xl"
+        >
+          Disable
+        </button>
+        <button
+          onclick="closeDisable2FAModal()"
+          class="w-full py-2 text-center text-sm text-brand-sub"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
     <%- include("partials/bottomnav") %>
 
     <script>
