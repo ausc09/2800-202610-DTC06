@@ -91,14 +91,16 @@ async function saveRole() {
   }
 }
 
-async function deleteUser(id, name) {
+function deleteUser(id, name) {
   if (id === currentUserId) {
-    alert('You cannot delete your own account.');
+    document.getElementById('cannot-delete-modal').classList.remove('hidden');
     return;
   }
-  if (!confirm(`Are you sure you want to delete ${name}?`)) return;
-  const res = await fetch(`/admin/users/${id}`, { method: 'DELETE' });
-  if (res.ok) loadUsers();
+  openDeleteModal('user', id, name);
+}
+
+function closeCannotDeleteModal() {
+  document.getElementById('cannot-delete-modal').classList.add('hidden');
 }
 
 async function loadReviews() {
@@ -116,28 +118,29 @@ function renderReviews(reviews) {
     return;
   }
 
-  list.innerHTML = reviews.map(review => `
-    <div class="px-4 py-4 border-b border-brand-border last:border-0">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-sm font-medium">${review.username}</span>
-            <span class="text-xs text-brand-muted">•</span>
-            <span class="text-xs text-brand-muted">${review.plantId?.name || 'Unknown plant'}</span>
-            <span class="text-xs text-brand-muted">•</span>
-            <span class="text-xs text-brand-muted">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
-          </div>
-          <p class="text-sm text-brand-sub">${review.comment || 'No comment'}</p>
-          ${review.foodSafetyNotes ? `<p class="text-xs text-brand-muted mt-1">Safety notes: ${review.foodSafetyNotes}</p>` : ''}
-          <p class="text-xs text-brand-muted mt-1">${new Date(review.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+list.innerHTML = reviews.map(review => `
+  <div class="px-4 py-4 border-b border-brand-border last:border-0">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1 flex-wrap">
+          <span class="text-sm font-medium">${review.username}</span>
+          <span class="text-xs text-brand-muted">·</span>
+          <span class="text-xs text-brand-muted">${review.plantId?.name || 'Unknown plant'}</span>
         </div>
-        <button onclick="deleteReview('${review._id}')"
-          class="p-1.5 hover:bg-red-50 rounded-lg transition flex-shrink-0">
-          <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i>
-        </button>
+        <div class="flex items-center gap-1 mb-1">
+          <span class="text-xs text-amber-400">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
+        </div>
+        <p class="text-sm text-brand-sub">${review.comment || 'No comment'}</p>
+        ${review.foodSafetyNotes ? `<p class="text-xs text-brand-muted mt-1">Safety notes: ${review.foodSafetyNotes}</p>` : ''}
+        <p class="text-xs text-brand-muted mt-1">${new Date(review.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
       </div>
+      <button onclick="deleteReview('${review._id}')"
+        class="p-1.5 hover:bg-red-50 rounded-lg transition flex-shrink-0">
+        <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i>
+      </button>
     </div>
-  `).join('');
+  </div>
+`).join('');
 
   lucide.createIcons();
 }
@@ -151,10 +154,60 @@ function filterReviews() {
   renderReviews(filtered);
 }
 
-async function deleteReview(id) {
-  if (!confirm('Are you sure you want to delete this review?')) return;
-  const res = await fetch(`/admin/reviews/${id}`, { method: 'DELETE' });
-  if (res.ok) loadReviews();
+function deleteReview(id) {
+  openDeleteModal('review', id);
+}
+
+let pendingDeleteType = null;
+let pendingDeleteId = null;
+
+function openDeleteModal(type, id, name = null) {
+  pendingDeleteType = type;
+  pendingDeleteId = id;
+
+  const subtitle = document.getElementById('delete-modal-subtitle');
+  subtitle.textContent = type === 'user'
+    ? `${name} will be permanently removed.`
+    : 'This review will be permanently removed.';
+
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.add('hidden');
+  pendingDeleteType = null;
+  pendingDeleteId = null;
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId || !pendingDeleteType) return;
+
+  const type = pendingDeleteType;
+  const id = pendingDeleteId;
+
+  const url = type === 'user'
+    ? `/admin/users/${id}`
+    : `/admin/reviews/${id}`;
+
+  const res = await fetch(url, { method: 'DELETE' });
+
+  console.log('status:', res.status, 'type:', type, 'id:', id);
+
+  if (res.ok) {
+    closeDeleteModal(); 
+    if (type === 'user') {
+      allUsers = allUsers.filter(u => u._id !== id);
+      renderUsers(allUsers);
+      document.getElementById('total-users').textContent = allUsers.length;
+      document.getElementById('total-admins').textContent = allUsers.filter(u => u.role === 'admin').length;
+    } else {
+      console.log('filtering reviews, before:', allReviews.length);
+      allReviews = allReviews.filter(r => r._id !== id);
+      console.log('filtering reviews, after:', allReviews.length);
+      renderReviews(allReviews);
+      document.getElementById('total-reviews').textContent = allReviews.length;
+    }
+  }
 }
 
 loadUsers();
