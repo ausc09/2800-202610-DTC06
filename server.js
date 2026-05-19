@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 const plantRoutes = require("./routes/plantRoutes");
 const authRoutes = require("./routes/auth");
 const aiTipRoutes = require("./routes/aiTip");
+const seedRoutes = require("./routes/seedRoutes");
 
 // connect database
 function connectDB() {
@@ -64,6 +65,7 @@ async function main() {
   // Routes
   app.use("/saved", savedRoutes);
   app.use(plantRoutes);
+  app.use(seedRoutes);
   app.use(reviewRoutes);
   app.use("/api", requireLogin, aiTipRoutes);
   app.use("/reviews", requireLogin, reviewRoutes);
