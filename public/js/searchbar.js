@@ -112,10 +112,6 @@ function setupSavedSearch(searchInput) {
 
       let matchesFilter = true;
 
-      if (activeFilters.has("safeOnly")) {
-        matchesFilter = matchesFilter && plant.dataset.safety === "safe";
-      }
-
       if (activeFilters.has("verified")) {
         matchesFilter = matchesFilter && plant.dataset.verified === "true";
       }

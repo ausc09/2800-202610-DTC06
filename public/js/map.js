@@ -46,8 +46,6 @@ function getMapQueryParams() {
     params.set("verified", "true");
   } else if (activeMapFilter === "inSeason") {
     params.set("inSeason", "true");
-  } else if (activeMapFilter === "safeOnly") {
-    params.set("safeOnly", "true");
   }
 
   if (currentUserLocation) {
