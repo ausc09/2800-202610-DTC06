@@ -1,54 +1,26 @@
 const express = require("express");
 const router = express.Router();
 
-const PlantCategory = require("../models/plantCategory");
-const Plant = require("../models/plant");
-const Review = require("../models/review");
 const {
-  formatDistance,
-  formatPlantItem,
-  formatSeasonText,
-  getSeasonStatus,
-} = require("../helpers/plantHelpers");
-const viewHistory = require("../models/viewHistory");
-
-function reviewPhotoSrc(review) {
-  if (!review.photo?.data || !review.photo.contentType) return null;
-
-  const photoData = review.photo.data;
-  const photoBuffer = Buffer.isBuffer(photoData)
-    ? photoData
-    : Buffer.from(photoData.buffer || photoData.data || photoData);
-
-  return `data:${review.photo.contentType};base64,${photoBuffer.toString("base64")}`;
-}
-
-function getUserLocation(req) {
-  if (req.query.lat !== undefined && req.query.lng !== undefined) {
-    return { lat: Number(req.query.lat), lng: Number(req.query.lng) };
-  }
-
-  const userLocation = req.session?.userLocation;
-  if (!userLocation) return null;
-
-  return { lat: userLocation.lat, lng: userLocation.lng };
-}
+  getUserLocation,
+  saveUserLocation,
+  getPlantInformation,
+  getPlantDetail,
+  getPaginatedPlants,
+  getMapPlants,
+} = require("./plantService");
 
 router.post("/api/user-location", (req, res) => {
-  const lat = Number(req.body.lat);
-  const lng = Number(req.body.lng);
-  req.session.userLocation = { lat, lng };
+  saveUserLocation(req);
   res.status(200).json({ message: "Location saved" });
 });
 
 router.get("/plant/information/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
+    const plant = await getPlantInformation(
+      req.params.id,
+      getUserLocation(req),
     );
-    const data = await response.json();
-    const plant = await formatPlantItem(data, getUserLocation(req));
     res.json(plant);
   } catch (error) {
     console.log(error);
@@ -58,55 +30,17 @@ router.get("/plant/information/:id", async (req, res) => {
 
 router.get("/plant/:id", async (req, res) => {
   try {
-    const userLocation = getUserLocation(req);
-    const id = req.params.id;
-    const plantDoc = await Plant.findOne({ fallingFruitId: id }).lean();
-    if (!plantDoc) {
-      return res.status(404).send("Plant not found");
-    }
-
-    if (req.user) {
-      await viewHistory.create({
-        userId: req.user._id,
-        fallingFruitId: Number(id),
-        plantName: plantDoc.name || "Unknown plant",
-      });
-    }
-
-    const reviewDocs = await Review.find({ plantId: plantDoc._id })
-      .sort({ date: -1 })
-      .lean();
-
-    const reviews = reviewDocs.map((review) => ({
-      ...review,
-      photoSrc: reviewPhotoSrc(review),
-    }));
-
-    const latestReview = reviews[0] || null;
-
-    const plant = {
-      ...plantDoc,
-      season: formatSeasonText(plantDoc.season_start, plantDoc.season_stop),
-      seasonStatus: getSeasonStatus(
-        plantDoc.season_start,
-        plantDoc.season_stop,
-      ),
-      author: plantDoc.author || "Not Available",
-      categories: plantDoc.categories || [],
-      urls: plantDoc.urls || {
-        wikipedia: null,
-        usda: null,
-      },
-      description: plantDoc.description || "No description available.",
-      safety: plantDoc.safety,
-      reviewStats: plantDoc.reviewStats,
-      fruitingStatus: latestReview?.fruitingStatus || "Not Available",
-      distance: formatDistance(userLocation, plantDoc),
-    };
-
-    console.log(plant);
-
-    res.render("plant", { plant, reviews, user: req.user || null });
+    const result = await getPlantDetail(
+      req.params.id,
+      getUserLocation(req),
+      req.user,
+    );
+    if (!result) return res.status(404).send("Plant not found");
+    res.render("plant", {
+      plant: result.plant,
+      reviews: result.reviews,
+      user: req.user || null,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -119,68 +53,20 @@ router.get("/plant/:id/review", (req, res) => {
 
 router.get("/plants/:page", async (req, res) => {
   try {
-    const userLocation = getUserLocation(req);
     const page = Number(req.params.page) || 1;
-    const plantsPerPage = 20;
-
-    const search = req.query.search?.trim() || "";
-    const verified = req.query.verified === "true";
-    const inSeason = req.query.inSeason === "true";
-    const safeOnly = req.query.safeOnly === "true";
-    const type = req.query.type || "all";
-
-    const query = {};
-
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { scientificName: { $regex: search, $options: "i" } },
-        { address: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (verified) {
-      query.unverified = false;
-    }
-
-    if (inSeason) {
-      const currentMonth = new Date().getMonth() + 1;
-      query.season_start = { $lte: currentMonth };
-      query.season_stop = { $gte: currentMonth };
-    }
-
-    if (safeOnly) {
-      query["safety.status"] = "verified";
-    }
-
-    if (type !== "all") {
-      query.name = { $regex: type, $options: "i" };
-    }
-
-    const totalPlants = await Plant.countDocuments(query);
-    const totalPages = Math.ceil(totalPlants / plantsPerPage) || 1;
-
-    const plants = await Plant.find(query)
-      .skip((page - 1) * plantsPerPage)
-      .limit(plantsPerPage)
-      .lean();
-
-    const plantsWithDistance = plants.map((plant) => ({
-      ...plant,
-      distance: formatDistance(userLocation, plant),
-      season: formatSeasonText(plant.season_start, plant.season_stop),
-    }));
-
-    res.render("plantList", {
-      plants: plantsWithDistance,
+    const filters = {
+      search: req.query.search?.trim() || "",
+      verified: req.query.verified === "true",
+      inSeason: req.query.inSeason === "true",
+      safeOnly: req.query.safeOnly === "true",
+      type: req.query.type || "all",
+    };
+    const result = await getPaginatedPlants(
+      filters,
+      getUserLocation(req),
       page,
-      totalPages,
-      search,
-      type,
-      verified,
-      inSeason,
-      safeOnly,
-    });
+    );
+    res.render("plantList", { ...result, ...filters });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -189,53 +75,18 @@ router.get("/plants/:page", async (req, res) => {
 
 router.get("/api/plants", async (req, res) => {
   try {
-    const userLocation = getUserLocation(req);
-    const search = req.query.search?.trim() || "";
-    const type = req.query.type || "all";
-
-    const north = Number(req.query.north);
-    const south = Number(req.query.south);
-    const east = Number(req.query.east);
-    const west = Number(req.query.west);
-
-    const query = {
-      lat: { $exists: true },
-      lng: { $exists: true },
-      name: { $exists: true, $ne: null },
+    const filters = {
+      search: req.query.search?.trim() || "",
+      type: req.query.type || "all",
+      bounds: {
+        north: Number(req.query.north),
+        south: Number(req.query.south),
+        east: Number(req.query.east),
+        west: Number(req.query.west),
+      },
     };
-
-    if (!isNaN(north) && !isNaN(south) && !isNaN(east) && !isNaN(west)) {
-      query.lat = { $gte: south, $lte: north };
-      query.lng = { $gte: west, $lte: east };
-    }
-
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { scientificName: { $regex: search, $options: "i" } },
-        { address: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (type !== "all") {
-      query.name = { $regex: type, $options: "i" };
-    }
-
-    const plants = await Plant.find(query)
-      .limit(300)
-      .select(
-        "fallingFruitId name scientificName lat lng season_start season_stop address location safety unverified source distance",
-      );
-
-    const result = plants.map((p) => ({
-      ...p.toObject(),
-      id: p.fallingFruitId,
-      distance: formatDistance(userLocation, p),
-      season: formatSeasonText(p.season_start, p.season_stop),
-      safety: p.safety,
-    }));
-
-    res.json(result);
+    const plants = await getMapPlants(filters, getUserLocation(req));
+    res.json(plants);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Something went wrong" });
