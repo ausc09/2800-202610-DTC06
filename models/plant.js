@@ -1,12 +1,5 @@
 const mongoose = require("mongoose");
 
-const reviewSchema = new mongoose.Schema({
-  username: String,
-  rating: Number,
-  comment: String,
-  date: { type: Date, default: Date.now },
-});
-
 const safetySchema = new mongoose.Schema(
   {
     status: {
@@ -30,6 +23,20 @@ const plantSchema = new mongoose.Schema({
   name: { type: String, default: "Unknown" },
   scientificName: { type: String, default: "Unknown" },
 
+  author: { type: String, default: "Not Available" },
+
+  categories: { type: [String], default: [] },
+
+  urls: {
+    wikipedia: { type: String, default: null },
+    usda: { type: String, default: null },
+  },
+
+  description: {
+    type: String,
+    default: "No description available.",
+  },
+
   address: { type: String, default: "Unknown" },
   location: { type: String, default: "Unknown" },
 
@@ -41,19 +48,21 @@ const plantSchema = new mongoose.Schema({
 
   lastObserved: { type: String, default: "Unknown" },
   access: { type: String, default: "Unknown" },
-  fruitingStatus: { type: String, default: "Ready to pick" },
+  fruitingStatus: { type: String, default: "Unknown" },
 
   imgUrl: { type: String, default: null },
   distance: { type: String, default: "N/A" },
 
   safety: { type: safetySchema, default: () => ({}) },
+  reviewStats: {
+    reviewCount: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+  },
 
   unverified: { type: Boolean, default: false },
   source: { type: String, default: "Falling Fruit" },
 
   photos: { type: [String], default: [] },
-  reviews: { type: [reviewSchema], default: [] },
-  photos: [String],
 });
 
 const Plant = mongoose.model("Plant", plantSchema);

@@ -7,7 +7,8 @@ const Review = require("../models/review");
 const {
   formatDistance,
   formatPlantItem,
-  getSafetyForPlant,
+  formatSeasonText,
+  getSeasonStatus,
 } = require("../helpers/plantHelpers");
 const viewHistory = require("../models/viewHistory");
 
@@ -59,8 +60,8 @@ router.get("/plant/:id", async (req, res) => {
   try {
     const userLocation = getUserLocation(req);
     const id = req.params.id;
-    const plant = await Plant.findOne({ fallingFruitId: id });
-    if (!plant) {
+    const plantDoc = await Plant.findOne({ fallingFruitId: id }).lean();
+    if (!plantDoc) {
       return res.status(404).send("Plant not found");
     }
 
@@ -68,11 +69,11 @@ router.get("/plant/:id", async (req, res) => {
       await viewHistory.create({
         userId: req.user._id,
         fallingFruitId: Number(id),
-        plantName: plant.name || "Unknown plant",
+        plantName: plantDoc.name || "Unknown plant",
       });
     }
 
-    const reviewDocs = await Review.find({ plantId: plant._id })
+    const reviewDocs = await Review.find({ plantId: plantDoc._id })
       .sort({ date: -1 })
       .lean();
 
@@ -80,9 +81,32 @@ router.get("/plant/:id", async (req, res) => {
       ...review,
       photoSrc: reviewPhotoSrc(review),
     }));
-    const distance = formatDistance(userLocation, plant);
 
-    res.render("plant", { plant, reviews, distance, user: req.user || null });
+    const latestReview = reviews[0] || null;
+
+    const plant = {
+      ...plantDoc,
+      season: formatSeasonText(plantDoc.season_start, plantDoc.season_stop),
+      seasonStatus: getSeasonStatus(
+        plantDoc.season_start,
+        plantDoc.season_stop,
+      ),
+      author: plantDoc.author || "Not Available",
+      categories: plantDoc.categories || [],
+      urls: plantDoc.urls || {
+        wikipedia: null,
+        usda: null,
+      },
+      description: plantDoc.description || "No description available.",
+      safety: plantDoc.safety,
+      reviewStats: plantDoc.reviewStats,
+      fruitingStatus: latestReview?.fruitingStatus || "Not Available",
+      distance: formatDistance(userLocation, plantDoc),
+    };
+
+    console.log(plant);
+
+    res.render("plant", { plant, reviews, user: req.user || null });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -126,7 +150,7 @@ router.get("/plants/:page", async (req, res) => {
     }
 
     if (safeOnly) {
-      query["safety.status"] = "safe";
+      query["safety.status"] = "verified";
     }
 
     if (type !== "all") {
@@ -144,6 +168,7 @@ router.get("/plants/:page", async (req, res) => {
     const plantsWithDistance = plants.map((plant) => ({
       ...plant,
       distance: formatDistance(userLocation, plant),
+      season: formatSeasonText(plant.season_start, plant.season_stop),
     }));
 
     res.render("plantList", {
@@ -199,17 +224,16 @@ router.get("/api/plants", async (req, res) => {
     const plants = await Plant.find(query)
       .limit(300)
       .select(
-        "fallingFruitId name scientificName lat lng season address location safety reviews unverified source distance",
+        "fallingFruitId name scientificName lat lng season_start season_stop address location safety unverified source distance",
       );
 
-    const result = await Promise.all(
-      plants.map(async (p) => ({
-        ...p.toObject(),
-        id: p.fallingFruitId,
-        distance: formatDistance(userLocation, p),
-        safety: await getSafetyForPlant(p.fallingFruitId),
-      })),
-    );
+    const result = plants.map((p) => ({
+      ...p.toObject(),
+      id: p.fallingFruitId,
+      distance: formatDistance(userLocation, p),
+      season: formatSeasonText(p.season_start, p.season_stop),
+      safety: p.safety,
+    }));
 
     res.json(result);
   } catch (error) {
@@ -271,55 +295,73 @@ router.get("/api/seed-locations", async (req, res) => {
 
       const category = await PlantCategory.findOne({
         fallingFruitTypeId: typeId,
-      });
+      }).lean();
 
       const formattedPlant = {
         fallingFruitId: loc.id,
 
         name: category ? category.name : "Unknown",
         scientificName: category ? category.scientificName : "Unknown",
-        reviews: [],
-        photos: [],
+
+        author: data.author || "Not Available",
+
+        categories: category ? category.categories : [],
+
+        urls: {
+          wikipedia: category?.urls?.wikipedia || null,
+          usda: category?.urls?.usda || null,
+        },
+
+        description: data.description?.trim() || "No description available.",
 
         address: data.address || "Unknown",
         location: data.address || "Unknown",
 
-        lat: loc.lat || data.lat,
-        lng: loc.lng || data.lng,
+        lat: loc.lat ?? data.lat,
+        lng: loc.lng ?? data.lng,
 
         lastObserved: data.updated_at
           ? new Date(data.updated_at).toDateString()
           : "Unknown",
 
-        season_start: data.season_start || null,
-        season_stop: data.season_stop || null,
+        season_start: data.season_start ?? null,
+        season_stop: data.season_stop ?? null,
 
-        season:
-          data.season_start && data.season_stop
-            ? `${data.season_start} – ${data.season_stop}`
-            : "Unknown",
+        access: data.access ?? loc.access ?? "Unknown",
 
-        access: data.access || loc.access || "Unknown",
-
-        fruitingStatus: "Ready to pick",
         imgUrl: null,
         distance: "N/A",
-
-        safety: {
-          status: data.unverified ? "unverified" : "verified",
-          label: data.unverified ? "Unverified" : "Verified",
-        },
 
         source: "Falling Fruit",
       };
 
-      await Plant.create(formattedPlant);
+      await Plant.findOneAndUpdate(
+        { fallingFruitId: loc.id },
+        {
+          $set: formattedPlant,
+          $setOnInsert: {
+            photos: [],
+            safety: {
+              status: "unverified",
+              label: "Unverified",
+            },
+            reviewStats: {
+              reviewCount: 0,
+              averageRating: 0,
+            },
+          },
+        },
+        {
+          upsert: true,
+          new: true,
+        },
+      );
 
       seededCount++;
     }
 
     res.json({
-      message: `Seeded ${seededCount} locations`,
+      message: `Seeded or updated ${seededCount} locations`,
     });
   } catch (error) {
     console.error(error);
