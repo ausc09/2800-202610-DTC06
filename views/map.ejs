@@ -111,10 +111,16 @@
   </button>
 </div>
 
-  <%- include("partials/loader", {
-  id: "mapLoader",
-  message: "Loading plants..."
-}) %>
+<div
+  id="mapLoader"
+  class="absolute inset-0 z-[500] bg-black/10 flex items-center justify-center"
+  style="top:168px;bottom:64px;display:none;"
+>
+  <div class="bg-brand-surface rounded-2xl px-5 py-4 shadow-card flex items-center gap-3">
+    <div class="w-5 h-5 border-2 border-brand-green border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-sm font-semibold text-brand-text">Loading plants...</p>
+  </div>
+</div>
 
   <%- include("partials/bottomnav") %>
 
