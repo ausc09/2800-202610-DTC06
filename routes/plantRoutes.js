@@ -4,7 +4,6 @@ const router = express.Router();
 const {
   getUserLocation,
   saveUserLocation,
-  getPlantInformation,
   getPlantDetail,
   getPaginatedPlants,
   getMapPlants,
@@ -13,19 +12,6 @@ const {
 router.post("/api/user-location", (req, res) => {
   saveUserLocation(req);
   res.status(200).json({ message: "Location saved" });
-});
-
-router.get("/plant/information/:id", async (req, res) => {
-  try {
-    const plant = await getPlantInformation(
-      req.params.id,
-      getUserLocation(req),
-    );
-    res.json(plant);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Something went wrong" });
-  }
 });
 
 router.get("/plant/:id", async (req, res) => {

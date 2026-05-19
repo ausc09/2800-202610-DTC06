@@ -2,7 +2,6 @@ const Review = require("../models/review");
 const Plant = require("../models/plant");
 const viewHistory = require("../models/viewHistory");
 const {
-  formatPlantItem,
   formatDistance,
   formatSeasonText,
   getSeasonStatus,
@@ -34,14 +33,6 @@ function saveUserLocation(req) {
   const lat = Number(req.body.lat);
   const lng = Number(req.body.lng);
   req.session.userLocation = { lat, lng };
-}
-
-async function getPlantInformation(id, userLocation) {
-  const response = await fetch(
-    `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
-  );
-  const data = await response.json();
-  return formatPlantItem(data, userLocation);
 }
 
 async function recordViewHistory(user, fallingFruitId, plantName) {
@@ -177,7 +168,6 @@ async function getMapPlants(filters, userLocation) {
 module.exports = {
   getUserLocation,
   saveUserLocation,
-  getPlantInformation,
   getPlantDetail,
   getPaginatedPlants,
   getMapPlants,
