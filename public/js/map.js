@@ -247,7 +247,7 @@ async function loadPlants() {
 
                 ${
                   season
-                    ? `<span style="font-size:11px;padding:3px 8px;background:#f5f0e8;color:#8c6a50;border-radius:20px">${formatSeason(season)}</span>`
+                    ? `<span style="font-size:11px;padding:3px 8px;background:#f5f0e8;color:#8c6a50;border-radius:20px">${season}</span>`
                     : ""
                 }
               </div>

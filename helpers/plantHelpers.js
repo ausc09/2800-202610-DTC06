@@ -26,6 +26,25 @@ function toMonthName(val) {
   return !isNaN(n) && n >= 1 && n <= 12 ? MONTHS[n - 1] : val;
 }
 
+function formatSeasonText(start, stop) {
+  const startName = start ? toMonthName(start) : null;
+  const stopName = stop ? toMonthName(stop) : null;
+
+  if (startName && stopName) {
+    return `${startName} – ${stopName}`;
+  }
+
+  if (startName) {
+    return `From ${startName}`;
+  }
+
+  if (stopName) {
+    return `Until ${stopName}`;
+  }
+
+  return "Not Available";
+}
+
 function getSeasonStatus(start, stop) {
   if (!start || !stop) {
     return null;
@@ -41,7 +60,11 @@ function getSeasonStatus(start, stop) {
 }
 
 function formatDistance(userLocation, plantLocation) {
-  if (!userLocation || plantLocation?.lat == null || plantLocation?.lng == null) {
+  if (
+    !userLocation ||
+    plantLocation?.lat == null ||
+    plantLocation?.lng == null
+  ) {
     return "N/A";
   }
 
@@ -164,9 +187,24 @@ async function getOrCreatePlant(plantId) {
   return plant;
 }
 
+async function updatePlantSafety(plantId) {
+  const reviewStats = await getReviewStats(plantId);
+  const safety = getSafetyFromReviewStats(reviewStats);
+
+  await PlantSchema.findByIdAndUpdate(plantId, {
+    reviewStats,
+    safety,
+  });
+
+  return safety;
+}
+
 module.exports = {
   formatPlantItem,
   formatDistance,
   getSafetyForPlant,
   getOrCreatePlant,
+  updatePlantSafety,
+  formatSeasonText,
+  getSeasonStatus,
 };
