@@ -106,4 +106,70 @@ router.post("/:plantId", upload.single("photo"), async (req, res) => {
   }
 });
 
+router.delete("/:reviewId", async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+
+    const isOwner = String(review.userId) === String(req.user._id);
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const plantId = review.plantId;
+    await Review.findByIdAndDelete(req.params.reviewId);
+    await updatePlantSafety(plantId);
+
+    res.status(200).json({ message: "Review deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+router.put("/:reviewId", async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.reviewId);
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+
+    const isOwner = String(review.userId) === String(req.user._id);
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const rating = Number(req.body.rating);
+    const { fruitingStatus, comment, foodSafetyNotes } = req.body;
+
+    if (rating < 1 || rating > 5 || !fruitingStatus) {
+      return res
+        .status(400)
+        .json({ error: "Rating and fruiting status are required" });
+    }
+
+    await Review.findByIdAndUpdate(req.params.reviewId, {
+      rating,
+      fruitingStatus,
+      comment: comment?.trim(),
+      foodSafetyNotes: foodSafetyNotes?.trim(),
+    });
+
+    await updatePlantSafety(review.plantId);
+
+    res.status(200).json({ message: "Review updated" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
 module.exports = router;

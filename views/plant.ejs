@@ -290,6 +290,26 @@
                               <%= reviewDate %>
                             </p>
                             <i class="fa-solid fa-chevron-down text-[10px] text-brand-muted transition-transform group-open:rotate-180"></i>
+                            <% if (user && review.userId && (String(review.userId) === String(user._id) || user.role === "admin")) { %>
+                              <div class="flex items-center gap-2 shrink-0">
+                                <button
+                                  class="edit-review-btn text-xs text-brand-green font-semibold"
+                                  data-review-id="<%= review._id %>"
+                                  data-rating="<%= review.rating %>"
+                                  data-fruiting-status="<%= review.fruitingStatus %>"
+                                  data-comment="<%= review.comment %>"
+                                  data-safety-notes="<%= review.foodSafetyNotes %>"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  class="delete-review-btn text-xs text-red-400 font-semibold"
+                                  data-review-id="<%= review._id %>"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            <% } %>
                           </div>
                         </div>
 
