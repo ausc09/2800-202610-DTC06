@@ -7,6 +7,7 @@ const {
   getPlantDetail,
   getPaginatedPlants,
   getMapPlants,
+  getPlantPhoto,
 } = require("./plantService");
 
 router.post("/api/user-location", (req, res) => {
@@ -80,6 +81,15 @@ router.get("/api/plants", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+router.get("/api/plant-photo/:id", async (req, res) => {
+  try {
+    const photoSrc = await getPlantPhoto(req.params.id);
+    res.json({ photoSrc });
+  } catch (error) {
+    res.json({ photoSrc: null });
   }
 });
 
