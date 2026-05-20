@@ -150,7 +150,7 @@ router.post("/:plantId", upload.single("photo"), async (req, res) => {
       return res.redirect(`/plant/${plant.fallingFruitId}?badge=${milestone.tier}`);
     }
 
-    res.redirect(`/plant/${plant.fallingFruitId}`);
+    res.redirect(`/plant/${plant.fallingFruitId}?fromReview=1`);
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");

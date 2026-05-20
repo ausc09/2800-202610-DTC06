@@ -50,7 +50,7 @@
     const leaves = ["🍃", "🌿", "☘️", "🍀", "🌱"];
     const particles = [];
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 35; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: -Math.random() * canvas.height,
@@ -66,8 +66,8 @@
     const start = Date.now();
 
     function draw() {
-      const elapsed = Date.now() - start;
-      if (elapsed > 3000) return;
+    const allDone = particles.every(p => p.y > canvas.height + 50);
+    if (allDone) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 

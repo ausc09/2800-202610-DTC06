@@ -27,6 +27,7 @@ router.get("/plant/:id", async (req, res) => {
       reviews: result.reviews,
       user: req.user || null,
       badgeTier: req.query.badge || null,
+      fromReview: req.query.fromReview || req.query.badge || null,
     });
   } catch (error) {
     console.log(error);
