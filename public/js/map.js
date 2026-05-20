@@ -218,8 +218,8 @@ async function loadPlants() {
             `
             <div style="font-family:'DM Sans',sans-serif;padding:4px;min-width:200px">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div style="width:40px;height:40px;background:#e8f5ee;border-radius:10px;
-                            flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                <div id="popup-img-${plant.fallingFruitId}" style="width:40px;height:40px;background:#e8f5ee;border-radius:10px;
+                            flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
                   <svg width="22" height="22" fill="none" stroke="#2d6a4f" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M12 22V12"/>
                     <path d="M12 12C12 8 16 4 20 4c0 4-4 8-8 8z"/>
@@ -264,6 +264,19 @@ async function loadPlants() {
             { maxWidth: 240 },
           )
           .openPopup();
+        
+          // Load hero photo
+          fetch(`/api/plant-photo/${plant.fallingFruitId}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.photoSrc) {
+                const container = document.getElementById(`popup-img-${plant.fallingFruitId}`);
+                if (container) {
+                  container.innerHTML = `<img src="${data.photoSrc}" alt="${plant.name}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`;
+                }
+              }
+            })
+            .catch(() => {});
       });
     });
   } catch (err) {

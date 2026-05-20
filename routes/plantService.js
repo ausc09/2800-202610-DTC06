@@ -191,10 +191,17 @@ async function getMapPlants(filters, userLocation) {
   }));
 }
 
+async function getPlantPhoto(fallingFruitId) {
+  const plant = await Plant.findOne({ fallingFruitId: Number(fallingFruitId) });
+  if (!plant) return null;
+  return await getHeroPhoto(plant._id);
+}
+
 module.exports = {
   getUserLocation,
   saveUserLocation,
   getPlantDetail,
   getPaginatedPlants,
   getMapPlants,
+  getPlantPhoto,
 };
