@@ -62,8 +62,8 @@
                 data-scientific="<%= plant.scientificName || '' %>"
                 data-location="<%= plant.location || plant.address || '' %>"
                 data-safety="<%= plant.safety?.status || '' %>"
-                data-verified="<%= plant.unverified === false ? 'true' : 'false' %>"
-                data-in-season="<%= plant.season && plant.season !== 'Unknown' ? 'true' : 'false' %>"
+                data-verified="<%= plant.safety?.status === 'verified' ? 'true' : 'false' %>"
+                data-in-season="<%= plant.season_start > 0 && plant.season_start <= new Date().getMonth() + 1 && plant.season_stop >= new Date().getMonth() + 1 ? 'true' : 'false' %>"
               >
                 <%- include("partials/savedPlantCard", { plant }) %>
               </div>
