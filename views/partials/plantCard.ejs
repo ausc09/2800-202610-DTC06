@@ -63,13 +63,13 @@
 <script>
   (() => {
     const currentPlant = <%- JSON.stringify(plant) %>;
-    if (currentPlant.imgUrl) {
+    if (currentPlant.heroPhoto) {
       const imgContainer = document.getElementById(
         "plant-image-<%= plant._id || plant.id %>",
       );
       if (!imgContainer) return;
       const img = document.createElement("img");
-      img.src = currentPlant.imgUrl;
+      img.src = currentPlant.heroPhoto;
       img.alt = currentPlant.name;
       img.className = "w-full h-full object-cover rounded-xl";
 
