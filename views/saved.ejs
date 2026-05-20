@@ -71,6 +71,31 @@
           </div>
     <% } %>
     <%- include("partials/bottomnav") %>
+    <!-- Unsave confirm modal -->
+    <div id="unsave-confirm-modal" class="fixed inset-0 z-[999] hidden">
+      <div class="fixed inset-0 bg-black/40" onclick="closeUnsaveConfirm()"></div>
+      <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-[1000]">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center gap-3 mb-3">
+          <i class="fa-regular fa-bookmark text-brand-sub text-xl"></i>
+          <div>
+            <p class="font-semibold text-base">Remove from Saved?</p>
+            <p id="unsave-confirm-name" class="text-sm text-brand-muted"></p>
+          </div>
+        </div>
+        <button id="unsave-confirm-yes" class="w-full bg-red-500 text-white py-3 rounded-xl font-semibold mb-2">
+          Remove
+        </button>
+        <button onclick="closeUnsaveConfirm()" class="w-full bg-brand-alt text-brand-sub py-3 rounded-xl font-semibold">
+          Cancel
+        </button>
+      </div>
+    </div>
+    <script>
+      function closeUnsaveConfirm() {
+        document.getElementById("unsave-confirm-modal").classList.add("hidden");
+      }
+    </script>
     <script src="/js/savedPlantCard.js"></script>
   </body>
 </html>
