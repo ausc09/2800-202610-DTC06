@@ -20,7 +20,7 @@
           ● <%= plant.source %>
         </span>
         <button
-          onclick="history.back()"
+          onclick="<%= locals.fromReview ? 'history.go(-3)' : 'history.back()' %>"
           class="absolute top-3 left-3 bg-white/70 backdrop-blur-sm rounded-xl p-2 hover:bg-white z-10"
         >
           <i class="fa-solid fa-angle-left w-5 h-5 text-brand-text"></i>
@@ -400,6 +400,11 @@
     </script>
 
     <script src="/js/plant.js"></script>
+    <% if (locals.badgeTier) { %>
+      <%- include("partials/badgeModal") %>
+      <script>const BADGE_TIER = <%= badgeTier %>;</script>
+      <script src="/js/badge.js"></script>
+    <% } %>
     <%- include("partials/bottomnav") %>
   </body>
   

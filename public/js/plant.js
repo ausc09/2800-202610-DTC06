@@ -22,7 +22,7 @@ const wtSteps = [
 
 let currentStep = 0;
 
-function showStep(index) {
+async function showStep(index) {
   const step = wtSteps[index];
   const tooltip = document.getElementById("wt-tooltip");
   const text = document.getElementById("wt-text");
@@ -35,6 +35,8 @@ function showStep(index) {
     return;
   }
 
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  await new Promise(r => setTimeout(r, 400));
   const rect = target.getBoundingClientRect();
   text.textContent = step.text;
   nextBtn.textContent = step.isLast ? "Done" : "Next";

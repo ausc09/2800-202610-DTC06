@@ -13,6 +13,22 @@ function requireLogin(req, res, next) {
   return res.redirect("/login");
 }
 
+const Review = require("../models/review");
+
+function reviewPhotoSrc(review) {
+  if (!review?.photo?.data) return null;
+  const b64 = review.photo.data.toString("base64");
+  return `data:${review.photo.contentType};base64,${b64}`;
+}
+
+async function getHeroPhoto(plantId) {
+  const review = await Review.findOne({
+    plantId,
+    "photo.data": { $exists: true },
+  }).sort({ date: -1 }).lean();
+  return review ? reviewPhotoSrc(review) : null;
+}
+
 router.get("/", requireLogin, async (req, res) => {
   try {
     const user = await UserSchema.findById(req.user._id).populate(
@@ -27,8 +43,9 @@ router.get("/", requireLogin, async (req, res) => {
       user.favoritePlants.map(async (plant) => {
         const obj = plant.toObject();
         obj.season = formatSeasonText(plant.season_start, plant.season_stop);
+        obj.heroPhoto = await getHeroPhoto(plant._id);
         return obj;
-      }),
+      })
     );
 
     res.render("saved", { savedPlants });
