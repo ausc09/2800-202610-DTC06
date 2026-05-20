@@ -73,6 +73,7 @@ async function getPlantDetail(id, userLocation, user) {
     reviewStats: plantDoc.reviewStats,
     fruitingStatus: latestReview?.fruitingStatus || "Not Available",
     distance: formatDistance(userLocation, plantDoc),
+    heroPhoto: await getHeroPhoto(plantDoc._id),
   };
 
   return { plant, reviews };
@@ -102,6 +103,17 @@ function buildPlantListQuery(filters) {
   return query;
 }
 
+async function getHeroPhoto(plantId) {
+  const review = await Review.findOne({
+    plantId,
+    "photo.data": { $exists: true },
+  })
+    .sort({ date: -1 })
+    .lean();
+
+  return review ? reviewPhotoSrc(review) : null;
+}
+
 async function getPaginatedPlants(filters, userLocation, page) {
   const PLANTS_PER_PAGE = 20;
   const query = buildPlantListQuery(filters);
@@ -112,12 +124,17 @@ async function getPaginatedPlants(filters, userLocation, page) {
     .limit(PLANTS_PER_PAGE)
     .lean();
 
-  return {
-    plants: plants.map((plant) => ({
+  const plantsWithData = await Promise.all(
+    plants.map(async (plant) => ({
       ...plant,
       distance: formatDistance(userLocation, plant),
       season: formatSeasonText(plant.season_start, plant.season_stop),
+      heroPhoto: await getHeroPhoto(plant._id),
     })),
+  );
+
+  return {
+    plants: plantsWithData,
     page,
     totalPages,
   };
