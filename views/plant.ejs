@@ -396,6 +396,11 @@
     </script>
 
     <script src="/js/plant.js"></script>
+    <% if (locals.badgeTier) { %>
+      <%- include("partials/badgeModal") %>
+      <script>const BADGE_TIER = <%= badgeTier %>;</script>
+      <script src="/js/badge.js"></script>
+    <% } %>
     <%- include("partials/bottomnav") %>
   </body>
   

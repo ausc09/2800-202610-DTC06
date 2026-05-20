@@ -4,6 +4,7 @@ const multer = require("multer");
 
 const Plant = require("../models/plant");
 const Review = require("../models/review");
+const User = require("../models/User");
 const { validatePlantImage } = require("../helpers/visionHelpers");
 const { updatePlantSafety } = require("../helpers/plantHelpers");
 
@@ -98,6 +99,28 @@ router.post("/:plantId", upload.single("photo"), async (req, res) => {
     });
 
     await updatePlantSafety(plant._id);
+
+
+    const reviewCount = await Review.countDocuments({ userId: req.user._id });
+
+    const milestones = [
+      { count: 1, name: "Sprout", emoji: "🌱", tier: 1 },
+      { count: 5, name: "Plant Scout", emoji: "🌿", tier: 2 },
+      { count: 10, name: "Master Forager", emoji: "🏆", tier: 3 },
+      { count: 25, name: "Botanist", emoji: "🧑‍🔬", tier: 4 },
+    ];
+
+    const milestone = milestones.find((m) => m.count === reviewCount);
+
+    if (milestone) {
+      const alreadyHas = req.user.badges?.some((b) => b.name === milestone.name);
+      if (!alreadyHas) {
+        await User.findByIdAndUpdate(req.user._id, {
+          $push: { badges: milestone },
+        });
+      }
+      return res.redirect(`/plant/${plant.fallingFruitId}?badge=${milestone.tier}`);
+    }
 
     res.redirect(`/plant/${plant.fallingFruitId}`);
   } catch (error) {

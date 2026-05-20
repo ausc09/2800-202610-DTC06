@@ -1,0 +1,31 @@
+<div id="badge-overlay" class="fixed inset-0 z-[1100]" style="display:none">
+  <canvas id="leaf-canvas" class="fixed inset-0 z-[1101] pointer-events-none"></canvas>
+
+  <div class="fixed inset-0 bg-black/50 z-[1100]"></div>
+
+  <div id="badge-modal" class="fixed inset-0 z-[1102] flex items-center justify-center p-6">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center relative overflow-hidden">
+
+      <div class="flex justify-center gap-1 mb-4">
+        <span id="badge-dot-1" class="w-2 h-2 rounded-full bg-gray-300"></span>
+        <span id="badge-dot-2" class="w-2 h-2 rounded-full bg-gray-300"></span>
+        <span id="badge-dot-3" class="w-2 h-2 rounded-full bg-gray-300"></span>
+        <span id="badge-dot-4" class="w-2 h-2 rounded-full bg-gray-300"></span>
+      </div>
+
+      <div id="badge-circle" class="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl bg-brand-greenPale">
+      </div>
+
+      <span id="badge-name-pill" class="inline-block text-xs font-semibold px-4 py-1.5 rounded-full mb-2 bg-brand-greenPale text-brand-green"></span>
+
+      <h2 id="badge-title" class="font-display font-bold text-xl text-brand-text mt-2"></h2>
+      <p id="badge-subtitle" class="text-sm text-brand-muted mt-1"></p>
+
+      <div id="badge-stats" class="bg-brand-alt rounded-xl p-3 mt-4 text-sm text-brand-sub"></div>
+
+      <button onclick="closeBadgeModal()" class="w-full bg-brand-charcoal text-white py-3 rounded-xl font-semibold mt-4">
+        Continue Exploring
+      </button>
+    </div>
+  </div>
+</div>
