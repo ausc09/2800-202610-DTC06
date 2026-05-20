@@ -7,7 +7,7 @@
   id="card-<%= cardId %>"
   data-saved-card
   data-falling-fruit-id="<%= plant.fallingFruitId %>"
-  data-img-url="<%= plant.imgUrl || '' %>"
+  data-img-url="<%= plant.heroPhoto || plant.imgUrl || '' %>"
   data-plant-name="<%= plant.name || '' %>"
   class="bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-3 cursor-pointer"
 >

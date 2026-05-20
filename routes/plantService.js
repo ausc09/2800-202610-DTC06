@@ -91,11 +91,11 @@ function buildPlantListQuery(filters) {
     ];
   }
 
-  if (verified) query.unverified = false;
+  if (verified) query["safety.status"] = "verified";
   if (inSeason) {
-    const currentMonth = new Date().getMonth() + 1;
-    query.season_start = { $lte: currentMonth };
-    query.season_stop = { $gte: currentMonth };
+    const m = new Date().getMonth() + 1;
+    query.season_start = { $gt: 0, $lte: m };
+    query.season_stop = { $gte: m };
   }
   if (safeOnly) query["safety.status"] = "verified";
   if (type !== "all") query.name = { $regex: type, $options: "i" };
@@ -167,7 +167,16 @@ function buildMapQuery({ search, type, bounds }) {
 }
 
 async function getMapPlants(filters, userLocation) {
-  const plants = await Plant.find(buildMapQuery(filters))
+  const query = buildMapQuery(filters);
+
+  if (filters.verified) query["safety.status"] = "verified";
+  if (filters.inSeason) {
+    const m = new Date().getMonth() + 1;
+    query.season_start = { $gt: 0, $lte: m };
+    query.season_stop = { $gte: m };
+  }
+
+  const plants = await Plant.find(query)
     .limit(300)
     .select(
       "fallingFruitId name scientificName lat lng season_start season_stop address location safety unverified source distance",
