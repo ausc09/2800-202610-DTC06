@@ -61,11 +61,11 @@
 
   </div>
 
-    <p class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
+    <p id="plants-count" class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
       <%= plants.length %> PLANTS NEAR YOU
     </p>
 
-    <div class="px-4 flex flex-col gap-3">
+    <div id="plants-container" class="px-4 flex flex-col gap-3">
       <% plants.forEach(plant=> { %>
         <a href="/plant/<%= plant.fallingFruitId %>" class="block">
           <%- include("partials/plantcard", { plant }) %>

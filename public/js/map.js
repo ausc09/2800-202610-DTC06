@@ -4,7 +4,7 @@ const greetingSub =
   hour < 12 ? "Good morning," : hour < 17 ? "Good afternoon," : "Good evening,";
 document.getElementById("greeting-sub").textContent = greetingSub;
 
-let activeMapFilter = "all";
+let activeMapFilters = new Set();
 let plantMarkers = [];
 let loadTimeout = null;
 let currentUserLocation = null;
@@ -12,7 +12,8 @@ let currentUserLocation = null;
 // Filter chips
 function updateFilterChipStyles() {
   document.querySelectorAll(".filter-chip").forEach((chip) => {
-    const isActive = chip.dataset.filter === activeMapFilter;
+    const filter = chip.dataset.filter;
+    const isActive = filter === "all" ? activeMapFilters.size === 0 : activeMapFilters.has(filter);
     chip.classList.toggle("bg-brand-charcoal", isActive);
     chip.classList.toggle("text-white", isActive);
     chip.classList.toggle("bg-brand-surface", !isActive);
@@ -42,9 +43,10 @@ function getMapQueryParams() {
     params.set("search", search);
   }
 
-  if (activeMapFilter === "verified") {
+  if (activeMapFilters.has("verified")) {
     params.set("verified", "true");
-  } else if (activeMapFilter === "inSeason") {
+  }
+  if (activeMapFilters.has("inSeason")) {
     params.set("inSeason", "true");
   }
 
@@ -287,14 +289,21 @@ map.on("zoomend", debounceLoadPlants);
 
 document.querySelectorAll(".filter-chip").forEach((chip) => {
   chip.addEventListener("click", () => {
-    activeMapFilter = chip.dataset.filter;
+    const filter = chip.dataset.filter;
+    if (filter === "all") {
+      activeMapFilters.clear();
+    } else if (activeMapFilters.has(filter)) {
+      activeMapFilters.delete(filter);
+    } else {
+      activeMapFilters.add(filter);
+    }
     updateFilterChipStyles();
     loadPlants();
   });
 });
 
-document.getElementById("search-input").addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    loadPlants();
-  }
+let searchTimeout = null;
+document.getElementById("search-input").addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(loadPlants, 300);
 });
