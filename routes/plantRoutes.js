@@ -66,6 +66,8 @@ router.get("/api/plants", async (req, res) => {
     const filters = {
       search: req.query.search?.trim() || "",
       type: req.query.type || "all",
+      verified: req.query.verified === "true",
+      inSeason: req.query.inSeason === "true",
       bounds: {
         north: Number(req.query.north),
         south: Number(req.query.south),
