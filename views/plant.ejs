@@ -6,24 +6,25 @@
   <body class="bg-brand-bg min-h-screen font-body text-brand-text">
     <div class="w-full min-h-screen bg-brand-bg">
       <!-- Plant Photo -->
-      <div
-        class="w-full h-52 bg-brand-alt flex items-center justify-center relative"
-      >
-        <p class="text-brand-muted text-sm text-center">
-          plant photo<br />upload or community photo
-        </p>
-        <span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold">
+      <div class="w-full h-52 bg-brand-alt flex items-center justify-center relative overflow-hidden">
+        <% if (plant.heroPhoto) { %>
+          <img src="<%= plant.heroPhoto %>" alt="<%= plant.name %>"
+              class="w-full h-full object-cover absolute inset-0">
+        <% } else { %>
+          <p class="text-brand-muted text-sm text-center">
+            plant photo<br />upload or community photo
+          </p>
+        <% } %>
+
+        <span id="api-source-badge" class="absolute bottom-3 right-3 text-xs text-brand-green font-semibold z-10 bg-white/70 backdrop-blur-sm px-2 py-1 rounded-xl">
           ● <%= plant.source %>
         </span>
-        <!-- Back button -->
         <button
           onclick="history.back()"
-          class="absolute top-3 left-3 bg-brand-alt rounded-xl p-2 hover:bg-brand-border"
+          class="absolute top-3 left-3 bg-white/70 backdrop-blur-sm rounded-xl p-2 hover:bg-white z-10"
         >
-          <i class="fa-solid fa-angle-left w-5 h-5 text-brand-sub"></i>
+          <i class="fa-solid fa-angle-left w-5 h-5 text-brand-text"></i>
         </button>
-        <!-- Save button -->
-      <%- include("partials/saveButton", { plant, buttonClass: "absolute top-3 right-3" }) %>
       </div>
 
       <!-- Plant information -->
@@ -31,13 +32,12 @@
         <div class="flex justify-between items-start mb-1">
           <div>
             <h1 class="font-bold text-xl text-brand-text"><%= plant.name %></h1>
-            <p class="text-brand-sub text-sm italic">
-              <%= plant.scientificName %>
-            </p>
+            <p class="text-brand-sub text-sm italic"><%= plant.scientificName %></p>
             <p class="text-brand-muted text-xs mt-1">
               <i class="fa-solid fa-location-dot"></i> <%= plant.location %>
             </p>
           </div>
+          <%- include("partials/saveButton", { plant, buttonClass: "" }) %>
         </div>
 
         <!-- Details Card -->
