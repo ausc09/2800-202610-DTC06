@@ -23,16 +23,36 @@
     // When the bookmark is clicked, wait for saveButton.ejs to flip the icon to fa-regular (unsaved),
     // then animate the card out and remove it from the list
     if (saveButton && saveIcon) {
-      saveButton.addEventListener("click", () => {
-        const observer = new MutationObserver(() => {
-          if (!saveIcon.classList.contains("fa-regular")) return;
-          observer.disconnect();
+      // Override the default saveButton.ejs click — intercept and show confirm first
+      saveButton.addEventListener("click", (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
 
-          // Suppress the "Removed from Saved" modal — the card disappearing is feedback enough
-          const unsaveModal = document.getElementById(`unsave-modal-${fallingFruitId}`);
-          if (unsaveModal) unsaveModal.classList.add("hidden");
+        // Show confirm modal
+        const modal = document.getElementById("unsave-confirm-modal");
+        const nameEl = document.getElementById("unsave-confirm-name");
+        const yesBtn = document.getElementById("unsave-confirm-yes");
 
-          // Prefer animating the outer .plant-item wrapper so its margin collapses too
+        nameEl.textContent = plantName + " will be removed from your collection.";
+        modal.classList.remove("hidden");
+
+        // Remove old listener to avoid stacking
+        const newYes = yesBtn.cloneNode(true);
+        yesBtn.replaceWith(newYes);
+
+        newYes.addEventListener("click", async () => {
+          modal.classList.add("hidden");
+
+          // Call the unsave API
+          const res = await fetch("/saved", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ plantId: fallingFruitId }),
+          });
+
+          if (!res.ok) return;
+
+          // Animate card out
           const wrapper =
             cardEl.parentElement &&
             cardEl.parentElement.classList.contains("plant-item")
@@ -44,7 +64,7 @@
           wrapper.style.transition =
             "opacity 0.25s ease, max-height 0.3s ease, margin 0.3s ease";
           wrapper.style.maxHeight = `${startHeight}px`;
-          void wrapper.offsetHeight; // force reflow so the transition picks up the starting height
+          void wrapper.offsetHeight;
           wrapper.style.opacity = "0";
           wrapper.style.maxHeight = "0";
           wrapper.style.marginTop = "0";
@@ -56,12 +76,7 @@
             showEmptyStateIfNeeded();
           }, 300);
         });
-
-        observer.observe(saveIcon, {
-          attributes: true,
-          attributeFilter: ["class"],
-        });
-      });
+      }, true); // capture phase to fire before saveButton.ejs handler
     }
 
     // Replace the placeholder SVG with the real image when one is available
