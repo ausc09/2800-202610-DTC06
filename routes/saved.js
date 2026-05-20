@@ -3,6 +3,7 @@ const router = express.Router();
 
 const UserSchema = require("../models/User");
 const Plant = require("../models/plant");
+const { formatSeasonText } = require("../helpers/plantHelpers");
 
 function requireLogin(req, res, next) {
   if (req.isAuthenticated()) {
@@ -41,6 +42,7 @@ router.get("/", requireLogin, async (req, res) => {
     const savedPlants = await Promise.all(
       user.favoritePlants.map(async (plant) => {
         const obj = plant.toObject();
+        obj.season = formatSeasonText(plant.season_start, plant.season_stop);
         obj.heroPhoto = await getHeroPhoto(plant._id);
         return obj;
       })
