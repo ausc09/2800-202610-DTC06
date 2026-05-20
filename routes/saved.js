@@ -3,6 +3,7 @@ const router = express.Router();
 
 const UserSchema = require("../models/User");
 const Plant = require("../models/plant");
+const { formatSeasonText } = require("../helpers/plantHelpers");
 
 function requireLogin(req, res, next) {
   if (req.isAuthenticated()) {
@@ -22,7 +23,15 @@ router.get("/", requireLogin, async (req, res) => {
       return res.render("saved", { savedPlants: [] });
     }
 
-    res.render("saved", { savedPlants: user.favoritePlants });
+    const savedPlants = await Promise.all(
+      user.favoritePlants.map(async (plant) => {
+        const obj = plant.toObject();
+        obj.season = formatSeasonText(plant.season_start, plant.season_stop);
+        return obj;
+      }),
+    );
+
+    res.render("saved", { savedPlants });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving saved plants");
