@@ -290,23 +290,18 @@
                               <%= reviewDate %>
                             </p>
                             <i class="fa-solid fa-chevron-down text-[10px] text-brand-muted transition-transform group-open:rotate-180"></i>
-                            <% if (user && review.userId && (String(review.userId) === String(user._id) || user.role === "admin")) { %>
+                            <% if (user && review.userId && String(review.userId) === String(user._id)) { %>
                               <div class="flex items-center gap-2 shrink-0">
+                                <a href="/reviews/<%= review._id %>/edit"
+                                  class="w-7 h-7 flex items-center justify-center rounded-full bg-brand-greenPale text-brand-green hover:bg-brand-green hover:text-white transition-colors">
+                                  <i class="fa-solid fa-pen text-[10px]"></i>
+                                </a>
                                 <button
-                                  class="edit-review-btn text-xs text-brand-green font-semibold"
+                                  class="delete-review-btn w-7 h-7 flex items-center justify-center rounded-full bg-red-50 text-red-400 hover:bg-red-400 hover:text-white transition-colors"
                                   data-review-id="<%= review._id %>"
-                                  data-rating="<%= review.rating %>"
-                                  data-fruiting-status="<%= review.fruitingStatus %>"
-                                  data-comment="<%= review.comment %>"
-                                  data-safety-notes="<%= review.foodSafetyNotes %>"
+                                  data-review-name="<%= displayName %>"
                                 >
-                                  Edit
-                                </button>
-                                <button
-                                  class="delete-review-btn text-xs text-red-400 font-semibold"
-                                  data-review-id="<%= review._id %>"
-                                >
-                                  Delete
+                                  <i class="fa-solid fa-trash text-[10px]"></i>
                                 </button>
                               </div>
                             <% } %>
@@ -391,6 +386,32 @@
                 class="text-xs text-brand-muted">Skip</button>
         <button id="wt-next-btn" onclick="nextStep()"
                 class="text-sm font-medium text-brand-green">Next</button>
+      </div>
+    </div>
+
+    <!-- Delete Review Modal -->
+    <div id="delete-review-modal" class="fixed inset-0 z-[999] hidden">
+      <div class="fixed inset-0 bg-black/40"
+          onclick="closeDeleteModal()"></div>
+      <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-[1000]">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center gap-3 mb-3">
+          <i class="fa-solid fa-trash text-red-400 text-xl"></i>
+          <div>
+            <p class="font-semibold text-base">Delete Review</p>
+            <p class="text-sm text-brand-muted">
+              Are you sure you want to delete this review? This cannot be undone.
+            </p>
+          </div>
+        </div>
+        <button id="confirm-delete-btn"
+                class="w-full bg-red-400 text-white py-3 rounded-xl font-semibold mb-2">
+          Delete
+        </button>
+        <button onclick="closeDeleteModal()"
+                class="w-full text-center text-sm text-brand-sub py-2">
+          Cancel
+        </button>
       </div>
     </div>
 

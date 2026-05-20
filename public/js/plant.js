@@ -232,66 +232,36 @@ async function analyzePhoto(dataUrl) {
   }
 }
 
+let pendingDeleteId = null;
+
+function closeDeleteModal() {
+  document.getElementById("delete-review-modal").classList.add("hidden");
+  pendingDeleteId = null;
+}
+
 document.querySelectorAll(".delete-review-btn").forEach((btn) => {
-  btn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!confirm("Are you sure you want to delete this review?")) return;
-
-    const reviewId = btn.dataset.reviewId;
-
-    try {
-      const res = await fetch(`/reviews/${reviewId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        alert("Failed to delete review.");
-        return;
-      }
-
-      location.reload();
-    } catch (error) {
-      alert("Something went wrong.");
-    }
-  });
-});
-
-document.querySelectorAll(".edit-review-btn").forEach((btn) => {
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const reviewId = btn.dataset.reviewId;
-    const rating = btn.dataset.rating;
-    const fruitingStatus = btn.dataset.fruitingStatus;
-    const comment = btn.dataset.comment;
-    const safetyNotes = btn.dataset.safetyNotes;
-
-    const newComment = prompt("Edit your comment:", comment);
-    if (newComment === null) return;
-
-    const newRating = prompt("Edit your rating (1-5):", rating);
-    if (newRating === null) return;
-
-    fetch(`/reviews/${reviewId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        rating: Number(newRating),
-        fruitingStatus,
-        comment: newComment,
-        foodSafetyNotes: safetyNotes,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          alert("Failed to update review.");
-          return;
-        }
-        location.reload();
-      })
-      .catch(() => alert("Something went wrong."));
+    pendingDeleteId = btn.dataset.reviewId;
+    document.getElementById("delete-review-modal").classList.remove("hidden");
   });
 });
+
+document
+  .getElementById("confirm-delete-btn")
+  .addEventListener("click", async () => {
+    if (!pendingDeleteId) return;
+
+    try {
+      const res = await fetch(`/reviews/${pendingDeleteId}`, {
+        method: "DELETE",
+      });
+
+      closeDeleteModal();
+      location.reload();
+    } catch (error) {
+      console.log("Something went wrong.", error);
+    }
+  });

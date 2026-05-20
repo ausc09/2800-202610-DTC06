@@ -14,16 +14,18 @@
             <button onclick="history.back()" class="p-2 rounded-xl bg-brand-alt">
             <i class="fa-solid fa-angle-left text-brand-sub"></i>
             </button>
-            <h1 class="text-lg font-display font-semibold">Add your review</h1>
+            <h1 class="text-lg font-display font-semibold pl-24">
+              <%= typeof mode !== 'undefined' && mode === 'edit' ? 'Edit your review' : 'Add your review' %>
+            </h1>
         </div>
-        <button onclick="saveDraftAndExit()"
+        <!-- <button onclick="saveDraftAndExit()"
                 class="text-xs font-medium text-brand-green">
             Save
-        </button>
+        </button> -->
     </div>
 
     <!-- Progress bar -->
-    <div class="mb-6">
+    <!-- <div class="mb-6">
       <div class="flex justify-between items-center mb-1">
         <span class="text-xs text-brand-muted">Progress</span>
         <span id="progress-text" class="text-xs text-brand-muted">0 / 2</span>
@@ -34,7 +36,7 @@
              style="width: 0%">
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Draft restored banner (hidden by default) -->
     <div id="draft-banner"
@@ -63,7 +65,15 @@
       </div>
     </div>
 
-    <form action="/reviews/<%= plant._id %>" method="POST" enctype="multipart/form-data">
+    <% if (typeof mode !== 'undefined' && mode === 'edit') { %>
+      <form action="/reviews/<%= review._id %>/edit" method="POST" enctype="multipart/form-data"
+        data-mode="edit"
+        data-edit-rating="<%= review.rating || 0 %>"
+        data-edit-fruiting="<%= review.fruitingStatus || '' %>">
+    <% } else { %>
+      <form action="/reviews/<%= plant._id %>" method="POST" enctype="multipart/form-data"
+        data-mode="create">
+    <% } %>
 
 
 
@@ -177,7 +187,7 @@
                   placeholder="Share your experience foraging this plant..."
                   class="w-full bg-brand-surface border border-brand-border rounded-2xl
                          px-4 py-3 text-sm text-brand-text placeholder-brand-muted
-                         outline-none focus:border-brand-green resize-none"></textarea>
+                         outline-none focus:border-brand-green resize-none"><%= typeof review !== 'undefined' ? review.comment || '' : '' %></textarea>
         <p id="char-count" class="text-[10px] text-brand-muted text-right mt-1">0 / 500</p>
       </div>
 
@@ -194,7 +204,7 @@
                   placeholder="e.g. Make sure berries are fully ripe, avoid unripe ones..."
                   class="w-full bg-brand-surface border border-brand-border rounded-2xl
                          px-4 py-3 text-sm text-brand-text placeholder-brand-muted
-                         outline-none focus:border-brand-green resize-none"></textarea>
+                         outline-none focus:border-brand-green resize-none"><%= typeof review !== 'undefined' ? review.foodSafetyNotes || '' : '' %></textarea>
       </div>
 
       <!-- Fruiting status (required) -->
@@ -207,7 +217,8 @@
             <label class="flex items-center gap-3 p-3 bg-brand-surface border border-brand-border
                           rounded-xl cursor-pointer hover:border-brand-green transition-colors">
               <input type="radio" name="fruitingStatus" value="<%= status %>"
-                     class="accent-brand-green">
+                      class="accent-brand-green"
+                      <%= typeof review !== 'undefined' && review.fruitingStatus === status ? 'checked' : '' %>>
               <span class="text-sm text-brand-text"><%= status %></span>
             </label>
           <% }) %>
@@ -218,7 +229,7 @@
       <button type="submit" id="submit-btn" disabled
               class="w-full py-4 rounded-full text-sm font-medium transition-all duration-300
                      bg-brand-border text-brand-muted cursor-not-allowed">
-        Submit review
+        <%= typeof mode !== 'undefined' && mode === 'edit' ? 'Save changes' : 'Submit review' %>
       </button>
       <p class="text-[10px] text-brand-muted text-center mt-2">
         * Required fields
