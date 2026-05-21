@@ -1,21 +1,23 @@
 <%
-  const safety = plant.safety || {
-    status: "unknown",
-    label: "Unknown"
-  };
+  const safety = plant.safety || { status: "unknown", label: "Unknown" };
+  const cardId = plant._id || plant.id || plant.fallingFruitId;
 %>
 
 <div
-  id="card-<%= plant.id %>"
-  class="relative bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-4 cursor-pointer"
+  id="card-<%= cardId %>"
+  data-saved-card
+  data-falling-fruit-id="<%= plant.fallingFruitId %>"
+  data-img-url="<%= plant.heroPhoto || plant.imgUrl || '' %>"
+  data-plant-name="<%= plant.name || '' %>"
+  class="bg-brand-surface border border-brand-borderLight rounded-2xl shadow-card p-4 flex items-center gap-3 cursor-pointer"
 >
   <div
-    class="w-20 h-20 rounded-2xl bg-[#EEEAE4] flex items-center justify-center shrink-0 overflow-hidden"
-    id="plant-image-<%= plant.id %>"
+    class="w-14 h-14 rounded-xl bg-[#EEEAE4] flex items-center justify-center shrink-0"
+    id="plant-image-<%= cardId %>"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      class="w-9 h-9"
+      class="w-7 h-7 text-brand-brown"
       viewBox="0 0 24 24"
       fill="none"
       stroke="#9D9587"
@@ -30,98 +32,37 @@
   </div>
 
   <div class="flex flex-col min-w-0 flex-1">
-    <h3 class="font-display font-bold text-lg text-brand-text truncate">
-      <%= plant.name %>
-    </h3>
+    <div class="flex items-start justify-between gap-2">
+      <h3 class="font-display font-bold text-sm text-brand-text truncate">
+        <%= plant.name %>
+      </h3>
 
-    <p class="font-body text-base italic text-brand-muted truncate">
+      <span
+        class="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1
+        <%= safety.status === 'verified' ? 'bg-brand-greenPale text-brand-green' : 'bg-brand-alt text-brand-sub' %>"
+      >
+        <% if (safety.status === 'verified') { %>✓<% } %>
+        <% if (safety.status === 'unverified') { %>⚠<% } %>
+        <%= safety.label %>
+      </span>
+    </div>
+
+    <p class="font-body text-xs italic text-brand-muted mt-1 truncate">
       <%= plant.scientificName %>
     </p>
 
-    <div class="flex items-center gap-3 mt-1 flex-wrap">
-      <span
-        class="
-          text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1
-
-          <%= safety.status === 'safe'
-            ? 'bg-brand-greenPale text-brand-green'
-
-            : safety.status === 'caution'
-            ? 'bg-[#F5EEDF] text-[#9C7A4D]'
-
-            : safety.status === 'unsafe'
-            ? 'bg-red-100 text-red-600'
-
-            : 'bg-brand-alt text-brand-sub'
-          %>
-        "
-      >
-        <% if (safety.status === 'safe') { %>
-          ✓
-        <% } %>
-
-        <% if (safety.status === 'caution') { %>
-          ⚠
-        <% } %>
-
-        <% if (safety.status === 'unsafe') { %>
-          ✕
-        <% } %>
-
-        <%= safety.label %>
-      </span>
-
-      <span
-        class="bg-brand-alt text-brand-sub text-xs font-medium px-2 py-1 rounded-full"
-      >
-        <%= plant.seasonStart && plant.seasonStop ? `${plant.seasonStart} – ${plant.seasonStop}` : "Unknown season" %>
-      </span>
+    <div
+      class="font-body flex items-center gap-2 text-xs text-brand-muted mt-2 flex-wrap"
+    >
+      <span> <i class="fas fa-map-marker-alt"></i> <%= plant.location %></span>
+      <span>•</span>
+      <span><%= plant.distance %> km</span>
+      <span>•</span>
+      <span class="text-brand-greenMid font-medium"><%= plant.season %></span>
     </div>
   </div>
 
-  <%- include("./saveButton", {
-    plant,
-    buttonClass: "bg-transparent hover:bg-transparent",
-  }) %>
+  <div class="font-body flex flex-col items-center justify-center shrink-0">
+    <%- include("./saveButton", { plant, buttonClass: "bg-transparent hover:bg-transparent !p-0 !rounded-none" }) %>
+  </div>
 </div>
-
-<script>
-  (() => {
-    const plant = <%- JSON.stringify(plant) %>;
-
-    const saveButton = document.getElementById(
-      "save-button-<%= plant.id %>"
-    );
-
-    const saveIcon = document.getElementById(
-      "save-icon-<%= plant.id %>"
-    );
-
-    const imageContainer = document.getElementById(
-      "plant-image-<%= plant.id %>"
-    );
-
-    const card = document.getElementById(
-      "card-<%= plant.id %>"
-    );
-
-    card.addEventListener("click", async (e) => {
-      if (e.target === saveButton || saveButton.contains(e.target)) {
-        return;
-      }
-
-      window.location.href = `/plant/${plant.id}`;
-    });
-
-    if (plant.imgUrl) {
-      const img = document.createElement("img");
-
-      img.src = plant.imgUrl;
-      img.alt = plant.name;
-      img.className = "w-full h-full object-cover";
-
-      imageContainer.innerHTML = "";
-      imageContainer.appendChild(img);
-    }
-  })();
-</script>

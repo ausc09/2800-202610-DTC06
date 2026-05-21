@@ -1,21 +1,34 @@
 const express = require("express");
 const router = express.Router();
-require("../models/plant");
+
 const UserSchema = require("../models/User");
-const {
-  getOrCreatePlant,
-  formatPlantItem,
-} = require("../helpers/plantHelpers");
+const Plant = require("../models/plant");
+const { formatSeasonText } = require("../helpers/plantHelpers");
 
 function requireLogin(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
 
-  return res.status(401).json({
-    message: "You must be logged in",
-    redirectTo: "/login",
-  });
+  return res.redirect("/login");
+}
+
+const Review = require("../models/review");
+
+function reviewPhotoSrc(review) {
+  if (!review?.photo?.data) return null;
+  const b64 = review.photo.data.toString("base64");
+  return `data:${review.photo.contentType};base64,${b64}`;
+}
+
+async function getHeroPhoto(plantId) {
+  const review = await Review.findOne({
+    plantId,
+    "photo.data": { $exists: true },
+  })
+    .sort({ date: -1 })
+    .lean();
+  return review ? reviewPhotoSrc(review) : null;
 }
 
 router.get("/", requireLogin, async (req, res) => {
@@ -24,23 +37,16 @@ router.get("/", requireLogin, async (req, res) => {
       "favoritePlants",
     );
 
-    console.log("User's favorite plants:", user.favoritePlants);
-
     if (!user.favoritePlants || user.favoritePlants.length === 0) {
       return res.render("saved", { savedPlants: [] });
     }
 
     const savedPlants = await Promise.all(
       user.favoritePlants.map(async (plant) => {
-        const response = await fetch(
-          `https://fallingfruit.org/api/0.3/locations/${plant.fallingFruitId}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Could not fetch plant information");
-        }
-
-        return await response.json();
+        const obj = plant.toObject();
+        obj.season = formatSeasonText(plant.season_start, plant.season_stop);
+        obj.heroPhoto = await getHeroPhoto(plant._id);
+        return obj;
       }),
     );
 
@@ -62,7 +68,11 @@ router.post("/", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const plant = await getOrCreatePlant(plantId);
+    const plant = await Plant.findOne({ fallingFruitId: Number(plantId) });
+
+    if (!plant) {
+      return res.status(404).json({ message: "Plant not found" });
+    }
 
     const alreadySaved = user.favoritePlants.some(
       (id) => id.toString() === plant._id.toString(),
@@ -92,7 +102,11 @@ router.delete("/", requireLogin, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const plant = await getOrCreatePlant(plantId);
+    const plant = await Plant.findOne({ fallingFruitId: Number(plantId) });
+
+    if (!plant) {
+      return res.status(404).json({ message: "Plant not found" });
+    }
 
     user.favoritePlants = user.favoritePlants.filter(
       (id) => id.toString() !== plant._id.toString(),
@@ -106,18 +120,25 @@ router.delete("/", requireLogin, async (req, res) => {
   }
 });
 
-router.get("/isFavorite", requireLogin, async (req, res) => {
-  const userId = req.user._id;
-  const { plantId } = req.query;
-
+router.get("/isFavorite", async (req, res) => {
   try {
-    const user = await UserSchema.findById(userId);
+    const { plantId } = req.query;
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!req.user) {
+      return res.status(200).json({ isFavorite: false });
     }
 
-    const plant = await getOrCreatePlant(plantId);
+    const user = await UserSchema.findById(req.user._id);
+
+    if (!user) {
+      return res.status(200).json({ isFavorite: false });
+    }
+
+    const plant = await Plant.findOne({ fallingFruitId: Number(plantId) });
+
+    if (!plant) {
+      return res.status(200).json({ isFavorite: false });
+    }
 
     const isFavorite = user.favoritePlants.some(
       (id) => id.toString() === plant._id.toString(),
@@ -125,7 +146,8 @@ router.get("/isFavorite", requireLogin, async (req, res) => {
 
     res.status(200).json({ isFavorite });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(200).json({ isFavorite: false });
   }
 });
 

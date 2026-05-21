@@ -1,62 +1,61 @@
 const express = require("express");
 const router = express.Router();
 
-const PlantCategory = require("../models/plantCategory");
-const { formatPlantItem } = require("../helpers/plantHelpers");
+const {
+  getUserLocation,
+  saveUserLocation,
+  getPlantDetail,
+  getPaginatedPlants,
+  getMapPlants,
+  getPlantPhoto,
+} = require("./plantService");
 
-// router.get("/plant", (req, res) => {
-//   const plant = {
-//     name: "Apple Tree",
-//     scientificName: "Malus domestica",
-//     location: "Stanley Park, Vancouver",
-//     lastObserved: "Apr 25, 2026",
-//     season: "Jun – Aug",
-//     access: "Public",
-//     fruitingStatus: "Ready to pick",
-//   };
-//   res.render("plant.ejs", { plant });
-// });
-
-router.get("/plant/information/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
-    );
-    const data = await response.json();
-    const plant = await formatPlantItem(data);
-    res.json(plant);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Something went wrong" });
-  }
+router.post("/api/user-location", (req, res) => {
+  saveUserLocation(req);
+  res.status(200).json({ message: "Location saved" });
 });
 
 router.get("/plant/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations/${id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
+    const result = await getPlantDetail(
+      req.params.id,
+      getUserLocation(req),
+      req.user,
     );
-    const data = await response.json();
-    const plant = await formatPlantItem(data);
-    res.render("plant", { plant });
+    if (!result) return res.status(404).send("Plant not found");
+    res.render("plant", {
+      plant: result.plant,
+      reviews: result.reviews,
+      user: req.user || null,
+      badgeTier: req.query.badge || null,
+      fromReview: req.query.fromReview || req.query.badge || null,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
   }
 });
 
-router.get("/plants", async (req, res) => {
+router.get("/plant/:id/review", (req, res) => {
+  res.redirect(`/reviews/${req.params.id}/new`);
+});
+
+router.get("/plants/:page", async (req, res) => {
   try {
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023&limit=50`,
+    const page = Number(req.params.page) || 1;
+    const filters = {
+      search: req.query.search?.trim() || "",
+      verified: req.query.verified === "true",
+      inSeason: req.query.inSeason === "true",
+      safeOnly: req.query.safeOnly === "true",
+      type: req.query.type || "all",
+    };
+    const result = await getPaginatedPlants(
+      filters,
+      getUserLocation(req),
+      page,
     );
-    const data = await response.json();
-    console.log(data[0]);
-    const plants = await Promise.all(data.map(formatPlantItem));
-    res.render("plantList", { plants });
-    console.log(plants);
+    res.render("plantList", { ...result, ...filters });
   } catch (error) {
     console.log(error);
     res.status(500).send("Something went wrong");
@@ -65,75 +64,32 @@ router.get("/plants", async (req, res) => {
 
 router.get("/api/plants", async (req, res) => {
   try {
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023&limit=200`,
-    );
-    const data = await response.json();
-    const result = await Promise.all(data.map(formatPlantItem));
-    res.json(result);
+    const filters = {
+      search: req.query.search?.trim() || "",
+      type: req.query.type || "all",
+      verified: req.query.verified === "true",
+      inSeason: req.query.inSeason === "true",
+      bounds: {
+        north: Number(req.query.north),
+        south: Number(req.query.south),
+        east: Number(req.query.east),
+        west: Number(req.query.west),
+      },
+    };
+    const plants = await getMapPlants(filters, getUserLocation(req));
+    res.json(plants);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
 
-router.get("/api/seed-categories", async (req, res) => {
+router.get("/api/plant-photo/:id", async (req, res) => {
   try {
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/types?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
-    );
-    const types = await response.json();
-
-    for (const type of types) {
-      await PlantCategory.findOneAndUpdate(
-        { fallingFruitTypeId: type.id },
-        {
-          name:
-            type.common_names?.en?.[0] ||
-            type.scientific_names?.[0] ||
-            "Unknown",
-          scientificName: type.scientific_names?.[0] || "",
-        },
-        { upsert: true },
-      );
-    }
-
-    res.json({ message: `Seeded ${types.length} categories` });
+    const photoSrc = await getPlantPhoto(req.params.id);
+    res.json({ photoSrc });
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
-  }
-});
-
-const Plant = require("../models/plant");
-
-router.get("/api/seed-locations", async (req, res) => {
-  try {
-    const response = await fetch(
-      `https://fallingfruit.org/api/0.3/locations?api_key=${process.env.FALLING_FRUIT_API_KEY}&bounds=49.198,-123.224|49.315,-123.023&limit=200`,
-    );
-    const locations = await response.json();
-
-    for (const loc of locations) {
-      const detail = await fetch(
-        `https://fallingfruit.org/api/0.3/locations/${loc.id}?api_key=${process.env.FALLING_FRUIT_API_KEY}&locale=en`,
-      );
-      const data = await detail.json();
-
-      await Plant.findOneAndUpdate(
-        { fallingFruitId: loc.id },
-        {
-          address: data.address,
-          season_start: data.season_start,
-          season_stop: data.season_stop,
-          lat: loc.lat,
-          lng: loc.lng,
-        },
-        { upsert: true },
-      );
-    }
-
-    res.json({ message: `Seeded ${locations.length} locations` });
-  } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.json({ photoSrc: null });
   }
 });
 

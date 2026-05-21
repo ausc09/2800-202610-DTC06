@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("partials/head") %>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body class="min-h-screen font-body text-brand-text bg-brand-bg">
+    <div class="max-w-2xl mx-auto px-6 py-8">
+      <!-- Header -->
+      <div class="flex mb-8 items-center justify-between">
+        <div>
+          <h1 class="font-display font-bold text-2xl">Admin Dashboard</h1>
+          <p class="mt-1 text-sm text-brand-sub">Manage users and reviews</p>
+        </div>
+        <button
+          onclick="window.location.href = '/'"
+          class="flex text-sm text-brand-sub items-center gap-2 hover:text-brand-green transition"
+        >
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          Back
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 mb-8 gap-4">
+        <div
+          class="p-4 bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <p class="mb-1 text-xs text-brand-muted tracking-widest">
+            TOTAL USERS
+          </p>
+          <p class="font-display font-bold text-3xl" id="total-users">—</p>
+        </div>
+        <div
+          class="p-4 bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <p class="mb-1 text-xs text-brand-muted tracking-widest">
+            TOTAL ADMINS
+          </p>
+          <p class="font-display font-bold text-3xl" id="total-admins">—</p>
+        </div>
+        <div
+          class="p-4 bg-brand-surface border border-brand-border rounded-2xl"
+        >
+          <p class="mb-1 text-xs text-brand-muted tracking-widest">
+            TOTAL REVIEWS
+          </p>
+          <p class="font-display font-bold text-3xl" id="total-reviews">—</p>
+        </div>
+      </div>
+      <!-- Users Table -->
+      <div
+        class="overflow-hidden mb-8 bg-brand-surface border border-brand-border rounded-2xl"
+      >
+        <div
+          class="flex px-4 py-3 border-b border-brand-border items-center justify-between"
+        >
+          <p class="text-xs font-semibold text-brand-muted tracking-widest">
+            ALL USERS
+          </p>
+          <input
+            id="search"
+            type="text"
+            placeholder="Search by name or email..."
+            onkeyup="filterUsers()"
+            class="w-48 px-3 py-1.5 text-xs bg-brand-alt border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+          />
+        </div>
+
+        <div id="users-list" class="overflow-y-auto max-h-96">
+          <div class="px-4 py-8 text-center text-brand-muted text-sm">
+            Loading...
+          </div>
+        </div>
+      </div>
+      <!-- Reviews Table -->
+      <div
+        class="overflow-hidden mb-8 bg-brand-surface border border-brand-border rounded-2xl"
+      >
+        <div
+          class="flex px-4 py-3 border-b border-brand-border items-center justify-between"
+        >
+          <p class="text-xs font-semibold text-brand-muted tracking-widest">
+            ALL REVIEWS
+          </p>
+          <input
+            id="search-review"
+            type="text"
+            placeholder="Search reviews..."
+            onkeyup="filterReviews()"
+            class="w-48 px-3 py-1.5 text-xs bg-brand-alt border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+          />
+        </div>
+        <div id="reviews-list" class="overflow-y-auto max-h-96">
+          <div class="px-4 py-8 text-center text-brand-muted text-sm">
+            Loading...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Role Modal -->
+    <div
+      id="modal"
+      class="hidden flex z-50 bg-black bg-opacity-40 fixed inset-0 items-center justify-center"
+    >
+      <div class="w-80 p-6 mx-4 bg-brand-surface rounded-2xl">
+        <h3 class="mb-4 font-display font-bold text-lg">Edit User Role</h3>
+        <p class="mb-4 text-sm text-brand-sub" id="modal-name"></p>
+        <select
+          id="modal-role"
+          class="w-full px-4 py-3 mb-4 text-sm bg-brand-alt border border-brand-border rounded-xl focus:outline-none focus:border-brand-green"
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <div class="flex gap-3">
+          <button
+            onclick="closeModal()"
+            class="flex-1 py-3 text-brand-sub text-sm border border-brand-border rounded-xl hover:bg-brand-alt transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="saveRole()"
+            class="flex-1 py-3 text-white text-sm bg-brand-charcoal rounded-xl hover:bg-brand-green transition"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cannot Delete Yourself Modal -->
+    <div id="cannot-delete-modal" class="z-[999] hidden fixed inset-0">
+      <div
+        class="bg-black/40 fixed inset-0"
+        onclick="closeCannotDeleteModal()"
+      ></div>
+      <div
+        class="z-[1000] p-6 bg-white rounded-t-3xl transition-transform fixed bottom-0 left-0 right-0 transform duration-300"
+      >
+        <div class="w-10 h-1 mx-auto mb-4 bg-gray-300 rounded-full"></div>
+        <div class="flex mb-3 items-center gap-3">
+          <i
+            class="text-brand-muted text-xl fa-solid fa-circle-exclamation"
+          ></i>
+          <div>
+            <p class="font-semibold text-base">Action Not Allowed</p>
+            <p class="text-sm text-brand-muted">
+              You cannot delete your own account.
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="closeCannotDeleteModal()"
+          class="w-full py-3 text-white font-semibold bg-brand-charcoal rounded-xl"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete Bottom Sheet Modal -->
+    <div id="delete-modal" class="z-[999] hidden fixed inset-0">
+      <div class="bg-black/40 fixed inset-0" onclick="closeDeleteModal()"></div>
+      <div
+        class="z-[1000] p-6 bg-white rounded-t-3xl transition-transform fixed bottom-0 left-0 right-0 transform duration-300"
+      >
+        <div class="w-10 h-1 mx-auto mb-4 bg-gray-300 rounded-full"></div>
+        <div class="flex mb-3 items-center gap-3">
+          <i class="text-red-500 text-xl fa-solid fa-trash"></i>
+          <div>
+            <p class="font-semibold text-base">Are you sure?</p>
+            <p class="text-sm text-brand-muted" id="delete-modal-subtitle"></p>
+          </div>
+        </div>
+        <button
+          onclick="confirmDelete()"
+          class="w-full py-3 mb-2 text-white font-semibold bg-red-500 rounded-xl"
+        >
+          Delete
+        </button>
+        <button
+          onclick="closeDeleteModal()"
+          class="w-full py-2 text-center text-sm text-brand-sub"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <script>
+      lucide.createIcons();
+    </script>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

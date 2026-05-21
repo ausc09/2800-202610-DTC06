@@ -1,20 +1,102 @@
+<% const plantSaveId = plant.fallingFruitId %>
+
 <button
-  id="save-button-<%= plant.id %>"
+  id="save-button-<%= plantSaveId %>"
   class="rounded-xl p-2 <%= buttonClass || 'bg-brand-alt hover:bg-brand-border' %>"
 >
   <i
-    id="save-icon-<%= plant.id %>"
+    id="save-icon-<%= plantSaveId %>"
     class="fa-regular fa-bookmark w-5 h-5 text-brand-sub"
   ></i>
 </button>
 
+<div id="save-modal-<%= plantSaveId %>" class="fixed inset-0 z-[999] hidden">
+  <div
+    class="fixed inset-0 bg-black/40"
+    onclick="closeSaveModal('<%= plantSaveId %>')"
+  ></div>
+
+  <div
+    class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-[1000] transform transition-transform duration-300"
+  >
+    <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+    <div class="flex items-center gap-3 mb-3">
+      <i class="fa-solid fa-bookmark text-brand-green text-xl"></i>
+      <div>
+        <p class="font-semibold text-base">Added to Saved!</p>
+        <p class="text-sm text-brand-muted">
+          <%= plant.name %> has been saved to your collection.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 text-brand-green text-sm mb-4">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>You can find it in your Saved plants tab</span>
+    </div>
+
+    <button
+      onclick="closeSaveModal('<%= plantSaveId %>')"
+      class="w-full bg-brand-charcoal text-white py-3 rounded-xl font-semibold mb-2"
+    >
+      Done
+    </button>
+    <a href="/saved" class="block text-center text-sm text-brand-sub py-2">
+      View Saved Plants
+    </a>
+  </div>
+</div>
+
+<div id="unsave-modal-<%= plantSaveId %>" class="fixed inset-0 z-[999] hidden">
+  <div
+    class="fixed inset-0 bg-black/40"
+    onclick="closeSaveModal('<%= plantSaveId %>')"
+  ></div>
+
+  <div
+    class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-[1000]"
+  >
+    <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+    <div class="flex items-center gap-3 mb-3">
+      <i class="fa-regular fa-bookmark text-brand-sub text-xl"></i>
+      <div>
+        <p class="font-semibold text-base">Removed from Saved</p>
+        <p class="text-sm text-brand-muted">
+          <%= plant.name %> has been removed from your collection.
+        </p>
+      </div>
+    </div>
+
+    <button
+      onclick="closeSaveModal('<%= plantSaveId %>')"
+      class="w-full bg-brand-charcoal text-white py-3 rounded-xl font-semibold"
+    >
+      Done
+    </button>
+  </div>
+</div>
+
 <script>
   (() => {
-    const plantId = "<%= plant.id %>";
+    const plantId = "<%= plantSaveId %>";
     const saveButton = document.getElementById(`save-button-${plantId}`);
     const saveIcon = document.getElementById(`save-icon-${plantId}`);
 
     let isSaved = false;
+
+    function redirectToLoginIfNeeded(res) {
+      if (res.redirected) {
+        window.location.href = res.url;
+        return true;
+      }
+
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return true;
+      }
+
+      return false;
+    }
 
     async function checkFavorite() {
       try {
@@ -51,11 +133,7 @@
           body: JSON.stringify({ plantId }),
         });
 
-        if (res.status === 401) {
-          alert("Please log in to save plants.");
-          window.location.href = "/login";
-          return;
-        }
+        if (redirectToLoginIfNeeded(res)) return;
 
         if (!res.ok) {
           console.error("Save request failed:", await res.text());
@@ -63,11 +141,32 @@
         }
 
         isSaved = !isSaved;
+
+        if (isSaved) {
+          document
+            .getElementById(`save-modal-${plantId}`)
+            .classList.remove("hidden");
+        } else {
+          document
+            .getElementById(`unsave-modal-${plantId}`)
+            .classList.remove("hidden");
+        }
+
         renderButton();
       } catch (err) {
         console.error(err);
       }
     });
+
+    window.closeSaveModal = function (id) {
+      document.getElementById(`save-modal-${id}`)?.classList.add("hidden");
+      document.getElementById(`unsave-modal-${id}`)?.classList.add("hidden");
+    };
+
+    const saveModal = document.getElementById(`save-modal-${plantId}`);
+    const unsaveModal = document.getElementById(`unsave-modal-${plantId}`);
+    if (saveModal) document.body.appendChild(saveModal);
+    if (unsaveModal) document.body.appendChild(unsaveModal);
 
     checkFavorite();
   })();

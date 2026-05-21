@@ -1,0 +1,242 @@
+<!-- views/addReview.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head") %>
+</head>
+<body class="bg-brand-bg font-body text-brand-text min-h-screen">
+
+  <div class="max-w-md mx-auto px-4 py-6 pb-24">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+            <button onclick="history.back()" class="p-2 rounded-xl bg-brand-alt">
+            <i class="fa-solid fa-angle-left text-brand-sub"></i>
+            </button>
+            <h1 class="text-lg font-display font-semibold pl-24">
+              <%= typeof mode !== 'undefined' && mode === 'edit' ? 'Edit your review' : 'Add your review' %>
+            </h1>
+        </div>
+        <!-- <button onclick="saveDraftAndExit()"
+                class="text-xs font-medium text-brand-green">
+            Save
+        </button> -->
+    </div>
+
+    <!-- Progress bar -->
+    <!-- <div class="mb-6">
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-xs text-brand-muted">Progress</span>
+        <span id="progress-text" class="text-xs text-brand-muted">0 / 2</span>
+      </div>
+      <div class="w-full h-1.5 bg-brand-border rounded-full overflow-hidden">
+        <div id="progress-bar"
+             class="h-full bg-brand-green rounded-full transition-all duration-300"
+             style="width: 0%">
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Draft restored banner (hidden by default) -->
+    <div id="draft-banner"
+        class="hidden mb-4 p-3 bg-brand-greenPale border border-brand-green
+                rounded-xl items-center gap-2">
+        <i class="fa-solid fa-circle-check text-brand-green text-sm"></i>
+        <p class="text-xs text-brand-green">Draft restored from your last session</p>
+        <button onclick="clearDraft()"
+                class="ml-auto text-xs text-brand-muted hover:text-brand-sub">
+            Clear
+        </button>
+    </div>
+
+    <!-- Plant info -->
+    <div class="flex items-center gap-3 mb-6 p-3 bg-brand-surface border border-brand-border rounded-2xl">
+      <div class="w-10 h-10 bg-brand-greenPale rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg width="18" height="18" fill="none" stroke="#2d6a4f" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M12 22V12"/>
+          <path d="M12 12C12 8 16 4 20 4c0 4-4 8-8 8z"/>
+          <path d="M12 16C12 13 8 9 4 9c0 4 4 7 8 7z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-brand-text"><%= plant.name %></p>
+        <p class="text-xs italic text-brand-muted"><%= plant.scientificName %></p>
+      </div>
+    </div>
+
+    <% if (typeof mode !== 'undefined' && mode === 'edit') { %>
+      <form action="/reviews/<%= review._id %>/edit" method="POST" enctype="multipart/form-data"
+        data-mode="edit"
+        data-edit-rating="<%= review.rating || 0 %>"
+        data-edit-fruiting="<%= review.fruitingStatus || '' %>">
+    <% } else { %>
+      <form action="/reviews/<%= plant._id %>" method="POST" enctype="multipart/form-data"
+        data-mode="create">
+    <% } %>
+
+
+
+    <!-- Star rating (required) -->
+    <div class="mb-5">
+    <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 flex items-center gap-1">
+        Rate your foraging experience <span class="text-red-400">*</span>
+
+        <!-- Question mark icon -->
+        <div class="relative inline-block">
+        <button type="button" id="rating-help-btn"
+                class="text-brand-muted hover:text-brand-green transition-colors ml-1">
+        <i class="fa-solid fa-circle-info text-sm"></i>
+        </button>
+
+        <!-- Rating guide tooltip -->
+        <div id="rating-tooltip"
+            class="hidden absolute right-0 top-6 z-50 w-56 bg-white border
+                    border-brand-border rounded-xl shadow-modal p-3">
+            <p class="text-[10px] font-semibold text-brand-muted tracking-widest mb-2">
+            RATING GUIDE
+            </p>
+            <div class="flex flex-col gap-2">
+            <% [
+                { stars: "⭐", label: "Poor", desc: "Plant not found or unsafe" },
+                { stars: "⭐⭐", label: "Fair", desc: "Limited or hard to access" },
+                { stars: "⭐⭐⭐", label: "Good", desc: "Decent, plant as expected" },
+                { stars: "⭐⭐⭐⭐", label: "Great", desc: "Easy access, safe to eat" },
+                { stars: "⭐⭐⭐⭐⭐", label: "Excellent", desc: "Abundant and safe" }
+            ].forEach(row => { %>
+                <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs leading-none"><%= row.stars %></span>
+                    <span class="text-xs font-medium text-brand-text"><%= row.label %></span>
+                </div>
+                <p class="text-[10px] text-brand-muted pl-0.5"><%= row.desc %></p>
+                </div>
+            <% }) %>
+            </div>
+        </div>
+        </div>
+    </label>
+
+    <!-- Star buttons -->
+    <div class="flex gap-2">
+        <% for(let i = 1; i <= 5; i++) { %>
+        <button type="button"
+                class="star-btn w-10 h-10 rounded-xl border border-brand-border
+                        flex items-center justify-center text-brand-muted
+                        hover:border-brand-star hover:text-brand-star transition-colors"
+                data-value="<%= i %>">
+            <i class="fa-solid fa-star"></i>
+        </button>
+        <% } %>
+    </div>
+
+    <input type="hidden" name="rating" id="rating-input" value="0">
+    </div>
+
+      <!-- Photo upload (optional) with AI moderation -->
+      <div class="mb-5">
+        <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 block">
+          Upload photo
+          <span class="text-brand-muted font-normal normal-case tracking-normal ml-1">(optional)</span>
+        </label>
+
+        <div id="upload-area"
+             class="border-2 border-dashed border-brand-border rounded-2xl p-5
+                    flex flex-col items-center gap-2 cursor-pointer
+                    hover:border-brand-green transition-colors">
+          <i class="fa-solid fa-camera text-2xl text-brand-muted"></i>
+          <p class="text-xs text-brand-muted">Tap to add a photo of the plant</p>
+          <span class="text-[10px] px-2 py-1 bg-brand-surface border border-brand-border
+                       rounded-full text-brand-muted flex items-center gap-1">
+            <i class="fa-solid fa-shield-halved text-brand-green text-[10px]"></i>
+            AI moderated by Google Cloud Vision
+          </span>
+        </div>
+
+        <!-- Photo preview -->
+        <div id="photo-preview" class="hidden relative mt-2">
+          <img id="preview-img" src="" alt="Preview"
+               class="w-full h-44 object-cover rounded-2xl">
+          <div id="ai-status" class="absolute bottom-2 left-2"></div>
+          <button type="button" id="remove-photo"
+                  class="absolute top-2 right-2 w-7 h-7 bg-white rounded-full
+                         flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-x text-xs text-brand-sub"></i>
+          </button>
+        </div>
+
+        <!-- AI error -->
+        <div id="ai-error"
+             class="hidden mt-2 p-3 bg-red-50 border border-red-200 rounded-xl
+                    items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-red-500 text-sm"></i>
+          <p class="text-xs text-red-600">No plant detected. Please upload a clear photo of the plant.</p>
+        </div>
+
+        <input type="file" name="photo" id="photo-input"
+               accept="image/*" capture="environment" class="hidden">
+      </div>
+
+      <!-- Write review (required) -->
+      <div class="mb-5">
+        <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 block">
+        Write your review
+        <span class="text-brand-muted font-normal normal-case tracking-normal ml-1">(optional)</span>
+        </label>
+        <textarea name="review" id="review-text" rows="3" maxlength="500"
+                  placeholder="Share your experience foraging this plant..."
+                  class="w-full bg-brand-surface border border-brand-border rounded-2xl
+                         px-4 py-3 text-sm text-brand-text placeholder-brand-muted
+                         outline-none focus:border-brand-green resize-none"><%= typeof review !== 'undefined' ? review.comment || '' : '' %></textarea>
+        <p id="char-count" class="text-[10px] text-brand-muted text-right mt-1">0 / 500</p>
+      </div>
+
+      <!-- Food safety notes (optional) -->
+      <div class="mb-5">
+        <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 block">
+          Food safety notes
+          <span class="text-brand-muted font-normal normal-case tracking-normal ml-1">(optional)</span>
+        </label>
+        <p class="text-xs text-brand-muted mb-2">
+          How do you know it's safe to eat? What should others watch out for?
+        </p>
+        <textarea name="safetyNotes" rows="2" maxlength="300"
+                  placeholder="e.g. Make sure berries are fully ripe, avoid unripe ones..."
+                  class="w-full bg-brand-surface border border-brand-border rounded-2xl
+                         px-4 py-3 text-sm text-brand-text placeholder-brand-muted
+                         outline-none focus:border-brand-green resize-none"><%= typeof review !== 'undefined' ? review.foodSafetyNotes || '' : '' %></textarea>
+      </div>
+
+      <!-- Fruiting status (required) -->
+      <div class="mb-6">
+        <label class="text-xs font-semibold text-brand-muted tracking-widest uppercase mb-2 block">
+          Current fruiting status <span class="text-red-400">*</span>
+        </label>
+        <div class="flex flex-col gap-2">
+          <% ["Not yet", "In season", "Ready to pick", "Past season"].forEach(status => { %>
+            <label class="flex items-center gap-3 p-3 bg-brand-surface border border-brand-border
+                          rounded-xl cursor-pointer hover:border-brand-green transition-colors">
+              <input type="radio" name="fruitingStatus" value="<%= status %>"
+                      class="accent-brand-green"
+                      <%= typeof review !== 'undefined' && review.fruitingStatus === status ? 'checked' : '' %>>
+              <span class="text-sm text-brand-text"><%= status %></span>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Submit button (disabled by default) -->
+      <button type="submit" id="submit-btn" disabled
+              class="w-full py-4 rounded-full text-sm font-medium transition-all duration-300
+                     bg-brand-border text-brand-muted cursor-not-allowed">
+        <%= typeof mode !== 'undefined' && mode === 'edit' ? 'Save changes' : 'Submit review' %>
+      </button>
+      <p class="text-[10px] text-brand-muted text-center mt-2">
+        * Required fields
+      </p>
+
+    </form>
+  </div>
+<script src="/js/addReview.js"></script>
+</body>
+</html>

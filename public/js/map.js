@@ -1,13 +1,19 @@
 // Set greeting based on time of day
 const hour = new Date().getHours();
-const greetingSub = hour < 12 ? "Good morning," :
-                    hour < 17 ? "Good afternoon," : "Good evening,";
+const greetingSub =
+  hour < 12 ? "Good morning," : hour < 17 ? "Good afternoon," : "Good evening,";
 document.getElementById("greeting-sub").textContent = greetingSub;
 
+let activeMapFilters = new Set();
+let plantMarkers = [];
+let loadTimeout = null;
+let currentUserLocation = null;
+
 // Filter chips
-function filterMap(type) {
-  document.querySelectorAll(".filter-chip").forEach(chip => {
-    const isActive = chip.dataset.filter === type;
+function updateFilterChipStyles() {
+  document.querySelectorAll(".filter-chip").forEach((chip) => {
+    const filter = chip.dataset.filter;
+    const isActive = filter === "all" ? activeMapFilters.size === 0 : activeMapFilters.has(filter);
     chip.classList.toggle("bg-brand-charcoal", isActive);
     chip.classList.toggle("text-white", isActive);
     chip.classList.toggle("bg-brand-surface", !isActive);
@@ -15,18 +21,84 @@ function filterMap(type) {
     chip.classList.toggle("border", !isActive);
     chip.classList.toggle("border-brand-border", !isActive);
   });
-  // TODO: filter map markers by type
+}
+
+function clearMarkers() {
+  plantMarkers.forEach((marker) => marker.remove());
+  plantMarkers = [];
+}
+
+function getMapQueryParams() {
+  const search = document.getElementById("search-input").value.trim();
+  const bounds = map.getBounds();
+
+  const params = new URLSearchParams();
+
+  params.set("north", bounds.getNorth());
+  params.set("south", bounds.getSouth());
+  params.set("east", bounds.getEast());
+  params.set("west", bounds.getWest());
+
+  if (search) {
+    params.set("search", search);
+  }
+
+  if (activeMapFilters.has("verified")) {
+    params.set("verified", "true");
+  }
+  if (activeMapFilters.has("inSeason")) {
+    params.set("inSeason", "true");
+  }
+
+  if (currentUserLocation) {
+    params.set("lat", currentUserLocation.lat);
+    params.set("lng", currentUserLocation.lng);
+  }
+
+  return params.toString();
+}
+
+function showMapLoader() {
+  const loader = document.getElementById("mapLoader");
+  if (loader) loader.style.display = "flex";
+}
+
+function hideMapLoader() {
+  const loader = document.getElementById("mapLoader");
+  if (loader) loader.style.display = "none";
 }
 
 // Initialize map centered on Vancouver
 const map = L.map("map").setView([49.2827, -123.1207], 13);
 
+let userMarker = null;
+
+const userLocationReady = getUserLocation().then(async (coords) => {
+  if (coords) {
+    currentUserLocation = coords;
+    await saveUserLocation(coords);
+
+    map.setView([coords.lat, coords.lng], 15);
+
+    userMarker = L.circleMarker([coords.lat, coords.lng], {
+      radius: 10,
+      fillColor: "#4A90D9",
+      color: "#fff",
+      weight: 3,
+      fillOpacity: 1,
+    }).addTo(map);
+
+    userMarker.bindTooltip("You are here", {
+      permanent: false,
+      direction: "top",
+      offset: [0, -10],
+    });
+  }
+});
+
 // Add CartoDB light map tiles
-// Code adapted from: https://leafletjs.com/examples/quick-start/
-// Code adapted from: https://carto.com/basemaps/
-// Modified by: Austyn Chan
 L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-  attribution: "© OpenStreetMap contributors © CARTO"
+  attribution: "© OpenStreetMap contributors © CARTO",
 }).addTo(map);
 
 // Show map tooltip on first visit
@@ -36,14 +108,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.getElementById("map-tooltip-overlay");
     overlay.classList.remove("hidden");
 
-    // Slight delay then fade in + slide up
     setTimeout(() => {
       tooltip.classList.remove("pointer-events-none");
       tooltip.classList.remove("opacity-0", "translate-y-4");
       tooltip.classList.add("opacity-100", "translate-y-0");
     }, 300);
 
-    // Auto dismiss after 5 seconds
     setTimeout(() => dismissMapTooltip(), 5000);
   }
 });
@@ -63,65 +133,93 @@ function dismissMapTooltip() {
   }, 500);
 }
 
-const months = ["Jan","Feb","Mar","Apr","May","Jun",
-                "Jul","Aug","Sep","Oct","Nov","Dec"];
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function formatSeason(season) {
+  if (!season) return "";
+  const parts = season.split(/\s*[–-]\s*/);
+  if (parts.length !== 2) return season;
+  const start = parseInt(parts[0]) - 1;
+  const end = parseInt(parts[1]) - 1;
+  if (isNaN(start) || isNaN(end)) return season;
+  return `${months[start]} – ${months[end]}`;
+}
+
+// Get user location
+function getUserLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+    );
+  });
+}
+
+async function saveUserLocation(coords) {
+  if (!coords) return;
+
+  try {
+    await fetch("/api/user-location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(coords),
+    });
+  } catch (err) {
+    console.error("Failed to save user location:", err);
+  }
+}
 
 // Fetch plant locations from Falling Fruit API and add markers
-// Code adapted from: https://fallingfruit.org/api
-// Modified by: Austyn Chan
 async function loadPlants() {
   try {
-    const res = await fetch(
-      "https://fallingfruit.org/api/0.3/locations?" +
-      "api_key=AKDJGHSD&" +
-      "bounds=49.198,-123.224%7C49.315,-123.023&" +
-      "locale=en&" +
-      "limit=20"
-    );
+    showMapLoader();
+    clearMarkers();
+
+    const query = getMapQueryParams();
+    const res = await fetch(`/api/plants?${query}`);
     const data = await res.json();
 
-    data.forEach(plant => {
+    data.forEach((plant) => {
       if (!plant.lat || !plant.lng) return;
 
-      // Create circle marker on map
       const marker = L.circleMarker([plant.lat, plant.lng], {
         radius: 8,
         fillColor: "#c47c5a",
         color: "#fff",
         weight: 2,
-        fillOpacity: 1
+        fillOpacity: 1,
       }).addTo(map);
 
-      // On marker click, fetch full details then show popup
-      marker.on("click", async () => {
-        marker.bindPopup(
-          `<p style="padding:8px;font-family:'DM Sans',sans-serif;color:#6b6456">Loading...</p>`
-        ).openPopup();
+      plantMarkers.push(marker);
 
-        try {
-          const typeId = plant.type_ids?.[0];
+      marker.on("click", () => {
+        const season = plant.season || "";
+        const dist = plant.distance ? parseFloat(plant.distance) : null;
+        const detailParams = currentUserLocation
+          ? `?lat=${encodeURIComponent(currentUserLocation.lat)}&lng=${encodeURIComponent(currentUserLocation.lng)}`
+          : "";
 
-          // Fetch location detail and type name at the same time
-          const [detailRes, typeRes] = await Promise.all([
-            fetch(`https://fallingfruit.org/api/0.3/locations/${plant.id}?api_key=AKDJGHSD&locale=en`),
-            fetch(`https://fallingfruit.org/api/0.3/types/${typeId}?api_key=AKDJGHSD&locale=en`)
-          ]);
-
-          const detail   = detailRes.ok ? await detailRes.json() : {};
-          const typeData = typeRes.ok   ? await typeRes.json()   : {};
-
-          const name       = plant.type_names?.[0] || "Unknown";
-          const scientific = typeData.scientific_names?.[0] || "";
-          const season     = detail.season_start && detail.season_stop
-            ? `${months[detail.season_start - 1]} – ${months[detail.season_stop - 1]}`
-            : "";
-
-          marker.bindPopup(`
+        marker
+          .bindPopup(
+            `
             <div style="font-family:'DM Sans',sans-serif;padding:4px;min-width:200px">
-
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div style="width:40px;height:40px;background:#e8f5ee;border-radius:10px;
-                            flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                <div id="popup-img-${plant.fallingFruitId}" style="width:40px;height:40px;background:#e8f5ee;border-radius:10px;
+                            flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
                   <svg width="22" height="22" fill="none" stroke="#2d6a4f" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M12 22V12"/>
                     <path d="M12 12C12 8 16 4 20 4c0 4-4 8-8 8z"/>
@@ -129,39 +227,96 @@ async function loadPlants() {
                   </svg>
                 </div>
                 <div>
-                  <div style="font-weight:600;font-size:14px;color:#1a1a16">${name}</div>
-                  <div style="font-size:11px;color:#a89e90;font-style:italic">${scientific}</div>
+                  <div style="font-weight:600;font-size:14px;color:#1a1a16">${plant.name}</div>
+                  <div style="font-size:11px;color:#a89e90;font-style:italic">
+                    ${plant.scientificName || ""}
+                    ${
+                      dist
+                        ? ` / ${
+                            dist < 1
+                              ? `${Math.round(dist * 1000)} m away`
+                              : `${dist.toFixed(1)} km away`
+                          }`
+                        : ""
+                    }
+                  </div>
                 </div>
               </div>
-
               <div style="display:flex;gap:6px;margin-bottom:10px">
-                <span style="font-size:11px;padding:3px 8px;background:#e8f5ee;
-                             color:#2d6a4f;border-radius:20px">✓ Safe to eat</span>
-                ${season ? `
-                  <span style="font-size:11px;padding:3px 8px;background:#f5f0e8;
-                               color:#8c6a50;border-radius:20px">${season}</span>
-                ` : ""}
-              </div>
+                <span style="font-size:11px;padding:3px 8px;background:#e8f5ee;color:#2d6a4f;border-radius:20px">
+                  ${plant.safety?.label || "Safe"}
+                </span>
 
-              <a href="/plant/${plant.id}"
+                ${
+                  season
+                    ? `<span style="font-size:11px;padding:3px 8px;background:#f5f0e8;color:#8c6a50;border-radius:20px">${season}</span>`
+                    : ""
+                }
+              </div>
+              <a href="/plant/${plant.fallingFruitId}${detailParams}"
                  style="display:block;background:#2a2620;color:#fff;text-align:center;
                         padding:9px;border-radius:10px;font-size:13px;
                         text-decoration:none;font-weight:500">
                 View Plant Profile →
               </a>
-
             </div>
-          `, { maxWidth: 240 }).openPopup();
-
-        } catch (err) {
-          console.error("Failed to load plant details:", err);
-        }
+          `,
+            { maxWidth: 240 },
+          )
+          .openPopup();
+        
+          // Load hero photo
+          fetch(`/api/plant-photo/${plant.fallingFruitId}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.photoSrc) {
+                const container = document.getElementById(`popup-img-${plant.fallingFruitId}`);
+                if (container) {
+                  container.innerHTML = `<img src="${data.photoSrc}" alt="${plant.name}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`;
+                }
+              }
+            })
+            .catch(() => {});
       });
     });
-
   } catch (err) {
     console.error("Failed to load plants:", err);
+  } finally {
+    hideMapLoader();
   }
 }
 
-loadPlants();
+function debounceLoadPlants() {
+  clearTimeout(loadTimeout);
+
+  loadTimeout = setTimeout(() => {
+    loadPlants();
+  }, 350);
+}
+
+updateFilterChipStyles();
+userLocationReady.then(loadPlants);
+
+map.on("moveend", debounceLoadPlants);
+map.on("zoomend", debounceLoadPlants);
+
+document.querySelectorAll(".filter-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const filter = chip.dataset.filter;
+    if (filter === "all") {
+      activeMapFilters.clear();
+    } else if (activeMapFilters.has(filter)) {
+      activeMapFilters.delete(filter);
+    } else {
+      activeMapFilters.add(filter);
+    }
+    updateFilterChipStyles();
+    loadPlants();
+  });
+});
+
+let searchTimeout = null;
+document.getElementById("search-input").addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(loadPlants, 300);
+});
