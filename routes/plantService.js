@@ -93,9 +93,11 @@ function buildPlantListQuery(filters) {
 
   if (verified) query["safety.status"] = "verified";
   if (inSeason) {
-    const m = new Date().getMonth() + 1;
-    query.season_start = { $gt: 0, $lte: m };
-    query.season_stop = { $gte: m };
+      const m = new Date().getMonth() + 1;
+      query.$and = [
+        { $or: [{ season_start: 0 }, { season_start: { $gt: 0, $lte: m } }] },
+        { season_stop: { $gte: m } },
+      ];
   }
   if (safeOnly) query["safety.status"] = "verified";
   if (type !== "all") query.name = { $regex: type, $options: "i" };
@@ -171,9 +173,11 @@ async function getMapPlants(filters, userLocation) {
 
   if (filters.verified) query["safety.status"] = "verified";
   if (filters.inSeason) {
-    const m = new Date().getMonth() + 1;
-    query.season_start = { $gt: 0, $lte: m };
-    query.season_stop = { $gte: m };
+      const m = new Date().getMonth() + 1;
+      query.$and = [
+        { $or: [{ season_start: 0 }, { season_start: { $gt: 0, $lte: m } }] },
+        { season_stop: { $gte: m } },
+      ];
   }
 
   const plants = await Plant.find(query)
