@@ -16,6 +16,10 @@ const aiStatus = document.getElementById("ai-status");
 const aiError = document.getElementById("ai-error");
 const aiErrorText = aiError.querySelector("p");
 
+const editRating = form.dataset.editRating;
+const editFruiting = form.dataset.editFruiting;
+const editMode = form.dataset.mode;
+
 let previewUrl = null;
 let photoStatus = "empty";
 let photoValidationRequestId = 0;
@@ -189,6 +193,26 @@ photoInput.addEventListener("change", () => {
 });
 
 removePhotoBtn.addEventListener("click", removePhotoPreview);
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (editMode === "edit") {
+    if (editRating && Number(editRating) > 0) {
+      updateRating(editRating);
+    }
+
+    if (editFruiting) {
+      const matchingInput = document.querySelector(
+        `input[name="fruitingStatus"][value="${editFruiting}"]`,
+      );
+      if (matchingInput) {
+        matchingInput.checked = true;
+        updateSubmitState();
+      }
+    }
+
+    updateCharCount();
+  }
+});
 
 updateCharCount();
 updateSubmitState();

@@ -27,11 +27,9 @@
 
     const nextVerified = overrides.verified ?? verified;
     const nextInSeason = overrides.inSeason ?? inSeason;
-    const nextSafeOnly = overrides.safeOnly ?? safeOnly;
 
     if (nextVerified) params.set("verified", "true");
     if (nextInSeason) params.set("inSeason", "true");
-    if (nextSafeOnly) params.set("safeOnly", "true");
 
     if (search) params.set("search", search);
 
@@ -42,7 +40,7 @@
   <div class="flex gap-2 px-4 pb-3 overflow-x-auto">
     <button
       onclick="window.location.href='/plants/1'"
-      class="<%= !verified && !inSeason && !safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
+      class="<%= !verified && !inSeason ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
     >
       All
     </button>
@@ -61,19 +59,13 @@
       In Season
     </button>
 
-    <button
-      onclick="window.location.href='<%= makeFilterUrl({ safeOnly: !safeOnly }) %>'"
-      class="<%= safeOnly ? 'bg-brand-charcoal text-white' : 'bg-brand-surface text-brand-sub border border-brand-border' %> text-xs font-medium px-4 py-1.5 rounded-full"
-    >
-      Safe Only
-    </button>
   </div>
 
-    <p class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
+    <p id="plants-count" class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3">
       <%= plants.length %> PLANTS NEAR YOU
     </p>
 
-    <div class="px-4 flex flex-col gap-3">
+    <div id="plants-container" class="px-4 flex flex-col gap-3">
       <% plants.forEach(plant=> { %>
         <a href="/plant/<%= plant.fallingFruitId %>" class="block">
           <%- include("partials/plantcard", { plant }) %>
@@ -86,7 +78,6 @@
 
   if (verified) params.set("verified", "true");
   if (inSeason) params.set("inSeason", "true");
-  if (safeOnly) params.set("safeOnly", "true");
   if (type && type !== "all") params.set("type", type);
   if (search) params.set("search", search);
 

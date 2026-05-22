@@ -1,23 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   const searchWrapper = document.querySelector("[data-search-screen]");
   const searchInput = document.getElementById("searchInput");
-  const searchButton = document.getElementById("searchButton");
 
-  if (!searchWrapper || !searchInput || !searchButton) return;
+  if (!searchWrapper || !searchInput) return;
 
   const screen = searchWrapper.dataset.searchScreen;
 
-  toggleSearchButton();
-
-  searchInput.addEventListener("input", toggleSearchButton);
-
-  function toggleSearchButton() {
-    const hasText = searchInput.value.trim().length > 0;
-    searchButton.classList.toggle("hidden", !hasText);
-  }
-
   if (screen === "plants") {
-    setupPlantListSearch(searchInput, searchButton);
+    setupPlantListSearch(searchInput);
   }
 
   if (screen === "saved") {
@@ -25,34 +15,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-function setupPlantListSearch(searchInput, searchButton) {
-  function submitSearch() {
+function setupPlantListSearch(searchInput) {
+  let debounceTimer = null;
+
+  async function liveSearch() {
     const search = searchInput.value.trim();
     const params = new URLSearchParams(window.location.search);
 
-    const verified = params.get("verified");
-    const inSeason = params.get("inSeason");
-    const safeOnly = params.get("safeOnly");
-
     const newParams = new URLSearchParams();
-
-    if (verified === "true") newParams.set("verified", "true");
-    if (inSeason === "true") newParams.set("inSeason", "true");
-    if (safeOnly === "true") newParams.set("safeOnly", "true");
+    if (params.get("verified") === "true") newParams.set("verified", "true");
+    if (params.get("inSeason") === "true") newParams.set("inSeason", "true");
     if (search) newParams.set("search", search);
 
     const query = newParams.toString();
+    const url = `/plants/1${query ? `?${query}` : ""}`;
 
-    window.location.href = `/plants/1${query ? `?${query}` : ""}`;
+    try {
+      const res = await fetch(url);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+
+      const newContainer = doc.getElementById("plants-container");
+      const newCount = doc.getElementById("plants-count");
+
+      if (newContainer) {
+        document.getElementById("plants-container").innerHTML =
+          newContainer.innerHTML;
+        document
+          .getElementById("plants-container")
+          .querySelectorAll("script")
+          .forEach((old) => {
+            const s = document.createElement("script");
+            s.textContent = old.textContent;
+            old.replaceWith(s);
+          });
+      }
+      if (newCount) {
+        document.getElementById("plants-count").textContent =
+          newCount.textContent;
+      }
+    } catch (err) {
+      console.error("Search failed:", err);
+    }
   }
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(liveSearch, 300);
+  });
 
   searchInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
-      submitSearch();
+      clearTimeout(debounceTimer);
+      liveSearch();
     }
   });
-
-  searchButton.addEventListener("click", submitSearch);
 }
 
 function setupSavedSearch(searchInput) {
@@ -111,10 +128,6 @@ function setupSavedSearch(searchInput) {
         location.includes(search);
 
       let matchesFilter = true;
-
-      if (activeFilters.has("safeOnly")) {
-        matchesFilter = matchesFilter && plant.dataset.safety === "safe";
-      }
 
       if (activeFilters.has("verified")) {
         matchesFilter = matchesFilter && plant.dataset.verified === "true";

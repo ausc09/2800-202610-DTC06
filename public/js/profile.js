@@ -3,9 +3,19 @@ async function toggle2FA() {
   if (!isEnabled) {
     window.location.href = '/setup-2fa';
   } else {
-    if (!confirm('Are you sure you want to disable 2FA?')) return;
-    const res = await fetch('/auth/2fa/disable', { method: 'POST' });
-    if (res.ok) window.location.reload();
+    document.getElementById('disable-2fa-modal').classList.remove('hidden');
+  }
+}
+
+function closeDisable2FAModal() {
+  document.getElementById('disable-2fa-modal').classList.add('hidden');
+}
+
+async function confirmDisable2FA() {
+  const res = await fetch('/auth/2fa/disable', { method: 'POST' });
+  if (res.ok) {
+    closeDisable2FAModal();
+    window.location.reload();
   }
 }
 

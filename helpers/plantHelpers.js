@@ -26,6 +26,25 @@ function toMonthName(val) {
   return !isNaN(n) && n >= 1 && n <= 12 ? MONTHS[n - 1] : val;
 }
 
+function formatSeasonText(start, stop) {
+  const startName = start ? toMonthName(start) : null;
+  const stopName = stop ? toMonthName(stop) : null;
+
+  if (startName && stopName) {
+    return `${startName} – ${stopName}`;
+  }
+
+  if (startName) {
+    return `From ${startName}`;
+  }
+
+  if (stopName) {
+    return `Until ${stopName}`;
+  }
+
+  return "Not Available";
+}
+
 function getSeasonStatus(start, stop) {
   if (!start || !stop) {
     return null;
@@ -41,7 +60,11 @@ function getSeasonStatus(start, stop) {
 }
 
 function formatDistance(userLocation, plantLocation) {
-  if (!userLocation || plantLocation?.lat == null || plantLocation?.lng == null) {
+  if (
+    !userLocation ||
+    plantLocation?.lat == null ||
+    plantLocation?.lng == null
+  ) {
     return "N/A";
   }
 
@@ -96,77 +119,21 @@ function getSafetyFromReviewStats(reviewStats) {
   return { status: "unverified", label: "Unverified" };
 }
 
-async function getSafetyForPlant(plantId) {
+async function updatePlantSafety(plantId) {
   const reviewStats = await getReviewStats(plantId);
-  return getSafetyFromReviewStats(reviewStats);
-}
+  const safety = getSafetyFromReviewStats(reviewStats);
 
-async function formatPlantItem(item, userLocation = null) {
-  const typeId = item.type_ids?.[0];
-  const category = await PlantCategory.findOne({ fallingFruitTypeId: typeId });
-  const plantDoc = await PlantSchema.findOne({ fallingFruitId: item.id });
-  const lat = plantDoc?.lat ?? item.lat;
-  const lng = plantDoc?.lng ?? item.lng;
-  const start = plantDoc?.season_start;
-  const stop = plantDoc?.season_stop;
-  const startName = start ? toMonthName(start) : null;
-  const stopName = stop ? toMonthName(stop) : null;
-  const seasonStatus = getSeasonStatus(start, stop);
-  const reviews = plantDoc?.reviews || [];
-  const latestReview = reviews[reviews.length - 1] || null;
-  const safety = await getSafetyForPlant(plantDoc?._id);
-
-  return {
-    id: item.id,
-    name: category ? category.name : "Not Available",
-    scientificName: category ? category.scientificName : "Not Available",
-    categories: category?.categories || [],
-    urls: category?.urls || {},
-    location: plantDoc?.address || item.address || "Not Available",
-    author: item.author || "Not Available",
-    description: item.description || "No description available.",
-    unverified: plantDoc?.unverified ?? item.unverified ?? false,
-    lat,
-    lng,
-    lastObserved: item.updated_at
-      ? new Date(item.updated_at).toDateString()
-      : "Not Available",
-    season:
-      startName && stopName ? `${startName} – ${stopName}` : "Not Available",
-    seasonStart: startName,
-    seasonStop: stopName,
-    seasonStatus: seasonStatus ? "in" : "out",
-    fruitingStatus: latestReview?.fruitingStatus || "Not Available",
-    imgUrl: null,
-    distance: formatDistance(userLocation, { lat, lng }),
+  await PlantSchema.findByIdAndUpdate(plantId, {
+    reviewStats,
     safety,
-    source: "Falling Fruit",
-  };
-}
+  });
 
-async function getOrCreatePlant(plantId) {
-  let plant = await PlantSchema.findOne({ fallingFruitId: plantId });
-  if (!plant) {
-    const response = await fetch(
-      `http://localhost:3000/plant/information/${plantId}`,
-    );
-    if (!response.ok) {
-      throw new Error("Could not fetch plant information");
-    }
-
-    const plantInfo = await response.json();
-    plant = new PlantSchema({
-      ...plantInfo,
-      fallingFruitId: plantId,
-    });
-    await plant.save();
-  }
-  return plant;
+  return safety;
 }
 
 module.exports = {
-  formatPlantItem,
   formatDistance,
-  getSafetyForPlant,
-  getOrCreatePlant,
+  updatePlantSafety,
+  formatSeasonText,
+  getSeasonStatus,
 };

@@ -4,7 +4,7 @@ const greetingSub =
   hour < 12 ? "Good morning," : hour < 17 ? "Good afternoon," : "Good evening,";
 document.getElementById("greeting-sub").textContent = greetingSub;
 
-let activeMapFilter = "all";
+let activeMapFilters = new Set();
 let plantMarkers = [];
 let loadTimeout = null;
 let currentUserLocation = null;
@@ -12,7 +12,8 @@ let currentUserLocation = null;
 // Filter chips
 function updateFilterChipStyles() {
   document.querySelectorAll(".filter-chip").forEach((chip) => {
-    const isActive = chip.dataset.filter === activeMapFilter;
+    const filter = chip.dataset.filter;
+    const isActive = filter === "all" ? activeMapFilters.size === 0 : activeMapFilters.has(filter);
     chip.classList.toggle("bg-brand-charcoal", isActive);
     chip.classList.toggle("text-white", isActive);
     chip.classList.toggle("bg-brand-surface", !isActive);
@@ -42,12 +43,11 @@ function getMapQueryParams() {
     params.set("search", search);
   }
 
-  if (activeMapFilter === "verified") {
+  if (activeMapFilters.has("verified")) {
     params.set("verified", "true");
-  } else if (activeMapFilter === "inSeason") {
+  }
+  if (activeMapFilters.has("inSeason")) {
     params.set("inSeason", "true");
-  } else if (activeMapFilter === "safeOnly") {
-    params.set("safeOnly", "true");
   }
 
   if (currentUserLocation) {
@@ -59,11 +59,13 @@ function getMapQueryParams() {
 }
 
 function showMapLoader() {
-  document.getElementById("mapLoader")?.classList.remove("hidden");
+  const loader = document.getElementById("mapLoader");
+  if (loader) loader.style.display = "flex";
 }
 
 function hideMapLoader() {
-  document.getElementById("mapLoader")?.classList.add("hidden");
+  const loader = document.getElementById("mapLoader");
+  if (loader) loader.style.display = "none";
 }
 
 // Initialize map centered on Vancouver
@@ -216,8 +218,8 @@ async function loadPlants() {
             `
             <div style="font-family:'DM Sans',sans-serif;padding:4px;min-width:200px">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div style="width:40px;height:40px;background:#e8f5ee;border-radius:10px;
-                            flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                <div id="popup-img-${plant.fallingFruitId}" style="width:40px;height:40px;background:#e8f5ee;border-radius:10px;
+                            flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
                   <svg width="22" height="22" fill="none" stroke="#2d6a4f" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M12 22V12"/>
                     <path d="M12 12C12 8 16 4 20 4c0 4-4 8-8 8z"/>
@@ -247,7 +249,7 @@ async function loadPlants() {
 
                 ${
                   season
-                    ? `<span style="font-size:11px;padding:3px 8px;background:#f5f0e8;color:#8c6a50;border-radius:20px">${formatSeason(season)}</span>`
+                    ? `<span style="font-size:11px;padding:3px 8px;background:#f5f0e8;color:#8c6a50;border-radius:20px">${season}</span>`
                     : ""
                 }
               </div>
@@ -262,6 +264,19 @@ async function loadPlants() {
             { maxWidth: 240 },
           )
           .openPopup();
+        
+          // Load hero photo
+          fetch(`/api/plant-photo/${plant.fallingFruitId}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.photoSrc) {
+                const container = document.getElementById(`popup-img-${plant.fallingFruitId}`);
+                if (container) {
+                  container.innerHTML = `<img src="${data.photoSrc}" alt="${plant.name}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`;
+                }
+              }
+            })
+            .catch(() => {});
       });
     });
   } catch (err) {
@@ -287,14 +302,21 @@ map.on("zoomend", debounceLoadPlants);
 
 document.querySelectorAll(".filter-chip").forEach((chip) => {
   chip.addEventListener("click", () => {
-    activeMapFilter = chip.dataset.filter;
+    const filter = chip.dataset.filter;
+    if (filter === "all") {
+      activeMapFilters.clear();
+    } else if (activeMapFilters.has(filter)) {
+      activeMapFilters.delete(filter);
+    } else {
+      activeMapFilters.add(filter);
+    }
     updateFilterChipStyles();
     loadPlants();
   });
 });
 
-document.getElementById("search-input").addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    loadPlants();
-  }
+let searchTimeout = null;
+document.getElementById("search-input").addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(loadPlants, 300);
 });

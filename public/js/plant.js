@@ -22,7 +22,7 @@ const wtSteps = [
 
 let currentStep = 0;
 
-function showStep(index) {
+async function showStep(index) {
   const step = wtSteps[index];
   const tooltip = document.getElementById("wt-tooltip");
   const text = document.getElementById("wt-text");
@@ -35,6 +35,8 @@ function showStep(index) {
     return;
   }
 
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  await new Promise(r => setTimeout(r, 400));
   const rect = target.getBoundingClientRect();
   text.textContent = step.text;
   nextBtn.textContent = step.isLast ? "Done" : "Next";
@@ -231,3 +233,37 @@ async function analyzePhoto(dataUrl) {
     aiResult.classList.remove("hidden");
   }
 }
+
+let pendingDeleteId = null;
+
+function closeDeleteModal() {
+  document.getElementById("delete-review-modal").classList.add("hidden");
+  pendingDeleteId = null;
+}
+
+document.querySelectorAll(".delete-review-btn").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    pendingDeleteId = btn.dataset.reviewId;
+    document.getElementById("delete-review-modal").classList.remove("hidden");
+  });
+});
+
+document
+  .getElementById("confirm-delete-btn")
+  .addEventListener("click", async () => {
+    if (!pendingDeleteId) return;
+
+    try {
+      const res = await fetch(`/reviews/${pendingDeleteId}`, {
+        method: "DELETE",
+      });
+
+      closeDeleteModal();
+      location.reload();
+    } catch (error) {
+      console.log("Something went wrong.", error);
+    }
+  });

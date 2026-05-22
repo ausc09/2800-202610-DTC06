@@ -3,6 +3,7 @@ const router = express.Router();
 
 const UserSchema = require("../models/User");
 const Plant = require("../models/plant");
+const { formatSeasonText } = require("../helpers/plantHelpers");
 
 function requireLogin(req, res, next) {
   if (req.isAuthenticated()) {
@@ -10,6 +11,22 @@ function requireLogin(req, res, next) {
   }
 
   return res.redirect("/login");
+}
+
+const Review = require("../models/review");
+
+function reviewPhotoSrc(review) {
+  if (!review?.photo?.data) return null;
+  const b64 = review.photo.data.toString("base64");
+  return `data:${review.photo.contentType};base64,${b64}`;
+}
+
+async function getHeroPhoto(plantId) {
+  const review = await Review.findOne({
+    plantId,
+    "photo.data": { $exists: true },
+  }).sort({ date: -1 }).lean();
+  return review ? reviewPhotoSrc(review) : null;
 }
 
 router.get("/", requireLogin, async (req, res) => {
@@ -22,7 +39,16 @@ router.get("/", requireLogin, async (req, res) => {
       return res.render("saved", { savedPlants: [] });
     }
 
-    res.render("saved", { savedPlants: user.favoritePlants });
+    const savedPlants = await Promise.all(
+      user.favoritePlants.map(async (plant) => {
+        const obj = plant.toObject();
+        obj.season = formatSeasonText(plant.season_start, plant.season_stop);
+        obj.heroPhoto = await getHeroPhoto(plant._id);
+        return obj;
+      })
+    );
+
+    res.render("saved", { savedPlants });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving saved plants");

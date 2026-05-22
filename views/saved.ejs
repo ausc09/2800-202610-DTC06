@@ -2,91 +2,100 @@
 <html lang="en">
   <head>
     <%- include("partials/head") %>
+    <title>Saved Plants · PlantSafe</title>
   </head>
 
-  <body class="bg-brand-bg min-h-screen font-body text-brand-text">
-    <header class="bg-brand-surface border-b border-brand-borderLight px-4 py-4 sticky top-0 z-10">
-      <h1 class="font-display font-bold text-lg text-brand-text">
-        Saved Plants
-      </h1>
-    </header>
+  <body class="bg-brand-bg font-body text-brand-text">
+
+    <div class="px-5 pt-6 pb-2 flex justify-between items-center">
+      <h1 class="font-display font-bold text-2xl text-brand-text">Saved Plants</h1>
+    </div>
 
     <% if (!savedPlants || savedPlants.length === 0) { %>
       <main class="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-8 text-center">
         <div class="w-16 h-16 rounded-2xl bg-[#EEEAE4] border border-brand-borderLight flex items-center justify-center mb-5">
           <i class="fa-regular fa-bookmark text-2xl text-brand-muted"></i>
         </div>
-
-        <h2 class="font-display font-bold text-lg text-brand-text mb-2">
-          No saved plants yet
-        </h2>
-
+        <h2 class="font-display font-bold text-lg text-brand-text mb-2">No saved plants yet</h2>
         <p class="text-sm text-brand-sub max-w-xs leading-relaxed mb-6">
           Explore the map and tap the bookmark icon to save plants you like
         </p>
-
         <a href="/map" class="text-brand-green font-semibold text-sm hover:text-brand-greenMid">
-          Explore map
-          <i class="fa-solid fa-arrow-right ml-1"></i>
+          Explore map <i class="fa-solid fa-arrow-right ml-1"></i>
         </a>
       </main>
     <% } else { %>
-      <main class="flex flex-col gap-4 p-4">
-        <%- include("partials/searchbar", {
-          placeholder: "Search saved plants...",
-          screen: "saved",
-          search: ""
-        }) %>
 
-        <div class="flex gap-2 overflow-x-auto">
-          <button
-            data-saved-filter="all"
-            class="saved-filter-btn bg-brand-charcoal text-white text-xs font-medium px-4 py-1.5 rounded-full"
-          >
-            All
-          </button>
+      <%- include("partials/searchbar", {
+        placeholder: "Search saved plants...",
+        screen: "saved",
+        search: ""
+      }) %>
 
-          <button
-            data-saved-filter="verified"
-            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
-          >
-            Verified
-          </button>
+      <div class="flex gap-2 px-4 pb-3 overflow-x-auto">
+        <button
+          data-saved-filter="all"
+          class="saved-filter-btn bg-brand-charcoal text-white text-xs font-medium px-4 py-1.5 rounded-full"
+        >All</button>
+        <button
+          data-saved-filter="verified"
+          class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
+        >Verified</button>
+        <button
+          data-saved-filter="in-season"
+          class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
+        >In Season</button>
+      </div>
 
-          <button
-            data-saved-filter="in-season"
-            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
-          >
-            In Season
-          </button>
+    <p
+      class="px-5 text-xs text-brand-muted font-semibold tracking-widest mb-3"
+      data-saved-count
+    >
+      <%= savedPlants.length %> PLANTS SAVED
+    </p>
 
-          <button
-            data-saved-filter="safeOnly"
-            class="saved-filter-btn bg-brand-surface text-brand-sub border border-brand-border text-xs font-medium px-4 py-1.5 rounded-full"
-          >
-            Safe Only
-          </button>
-        </div>
-
-        <div id="savedPlantsContainer" class="flex flex-col gap-4">
-          <% savedPlants.forEach((plant) => { %>
-            <div
-              class="plant-item relative"
-              data-name="<%= plant.name || '' %>"
-              data-scientific="<%= plant.scientificName || '' %>"
-              data-location="<%= plant.location || plant.address || '' %>"
-              data-safety="<%= plant.safety?.status || '' %>"
-              data-verified="<%= plant.unverified === false ? 'true' : 'false' %>"
-              data-in-season="<%= plant.season && plant.season !== 'Unknown' ? 'true' : 'false' %>"
-            >
-              <a href="/plant/<%= plant.fallingFruitId %>" class="block">
-                <%- include("partials/plantCard", { plant: plant, hideSource: true, showSave: true }) %>
-              </a>
-            </div>
-          <% }) %>
-        </div>
-      </main>
+    <div id="savedPlantsContainer" class="px-4 flex flex-col gap-3 pb-24">
+            <% savedPlants.forEach((plant) => { %>
+              <div
+                class="plant-item"
+                data-name="<%= plant.name || '' %>"
+                data-scientific="<%= plant.scientificName || '' %>"
+                data-location="<%= plant.location || plant.address || '' %>"
+                data-safety="<%= plant.safety?.status || '' %>"
+                data-verified="<%= plant.safety?.status === 'verified' ? 'true' : 'false' %>"
+                data-in-season="<%= (plant.season_start > 0 ? plant.season_start <= new Date().getMonth() + 1 : true) && plant.season_stop >= new Date().getMonth() + 1 ? 'true' : 'false' %>"
+              >
+                <%- include("partials/savedPlantCard", { plant }) %>
+              </div>
+            <% }) %>
+          </div>
     <% } %>
     <%- include("partials/bottomnav") %>
+    <!-- Unsave confirm modal -->
+    <div id="unsave-confirm-modal" class="fixed inset-0 z-[999] hidden">
+      <div class="fixed inset-0 bg-black/40" onclick="closeUnsaveConfirm()"></div>
+      <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-[1000]">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center gap-3 mb-3">
+          <i class="fa-regular fa-bookmark text-brand-sub text-xl"></i>
+          <div>
+            <p class="font-semibold text-base">Remove from Saved?</p>
+            <p id="unsave-confirm-name" class="text-sm text-brand-muted"></p>
+          </div>
+        </div>
+        <button id="unsave-confirm-yes" class="w-full bg-red-500 text-white py-3 rounded-xl font-semibold mb-2">
+          Remove
+        </button>
+        <button onclick="closeUnsaveConfirm()" class="w-full bg-brand-alt text-brand-sub py-3 rounded-xl font-semibold">
+          Cancel
+        </button>
+      </div>
+    </div>
+    <script>
+      function closeUnsaveConfirm() {
+        document.getElementById("unsave-confirm-modal").classList.add("hidden");
+      }
+    </script>
+    <script src="/js/savedPlantCard.js"></script>
   </body>
 </html>
