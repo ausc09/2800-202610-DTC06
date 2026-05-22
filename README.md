@@ -126,8 +126,8 @@ To explore the app without creating an account, use the following test credentia
  
 | Role | Email | Password |
 |------|-------|----------|
-| Regular User | will add later | later |
-| Admin | later | later |
+| Regular User | test@bcit.ca | testPassw0rd |
+| Admin | admin@bcit.ca | adminPassw0rd |
  
 > Or sign in with Google OAuth on the login page.
  
@@ -190,6 +190,7 @@ Check that your `GEMINI_API_KEY` is valid and has not exceeded its daily quota i
 
 - Plant safety status is community-sourced and may not be accurate — users can submit incorrect or misleading information.
 - AI Foraging Tip is limited to 1 use per user per day.
+- Review photos are currently stored as binary buffers in MongoDB instead of being offloaded to cloud storage (e.g., Google Cloud Storage), which makes the database heavier and less scalable.
 
 ---
 
