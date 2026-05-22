@@ -47,9 +47,14 @@ const Review = require('../models/review');
 // get all reviews
 router.get('/reviews', requireAdmin, async (req, res) => {
   try {
-    const reviews = await Review.find().populate('userId', 'firstName lastName email').populate('plantId', 'name');
+    const reviews = await Review.find()
+      .select('username rating comment foodSafetyNotes date plantId')
+      .populate('plantId', 'name')
+      .sort({ date: -1 })
+      .lean();
     res.json(reviews);
   } catch (err) {
+    console.error('Failed to load admin reviews:', err);
     res.status(500).json({ error: err.message });
   }
 });

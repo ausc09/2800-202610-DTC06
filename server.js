@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const passport = require("passport");
 require("dotenv").config();
 require("./config/passport");
@@ -48,6 +49,7 @@ async function main() {
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
+      store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
       resave: false,
       saveUninitialized: false,
       cookie: {
