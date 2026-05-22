@@ -120,19 +120,6 @@ The app will be available at **http://localhost:3000**
 
 ---
 
-## Test Login
- 
-To explore the app without creating an account, use the following test credentials:
- 
-| Role | Email | Password |
-|------|-------|----------|
-| Regular User | test@bcit.ca | testPassw0rd |
-| Admin | admin@bcit.ca | adminPassw0rd |
- 
-> Or sign in with Google OAuth on the login page.
- 
----
-
 ## Features
 
 - **Interactive Map** — Browse edible plants near you on a Leaflet map, filtered by type, season, and safety status
